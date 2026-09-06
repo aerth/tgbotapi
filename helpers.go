@@ -11,6 +11,10 @@ import (
 	"strings"
 )
 
+func IsModifiedVersion() bool {
+	return true
+}
+
 // NewMessage creates a new Message.
 //
 // chatID is where to send it, text is the message text.
@@ -309,7 +313,6 @@ func NewUpdate(offset int) UpdateConfig {
 // link is the url parsable link you wish to get the updates.
 func NewWebhook(link string) (WebhookConfig, error) {
 	u, err := url.Parse(link)
-
 	if err != nil {
 		return WebhookConfig{}, err
 	}
@@ -325,7 +328,6 @@ func NewWebhook(link string) (WebhookConfig, error) {
 // file contains a string to a file, FileReader, or FileBytes.
 func NewWebhookWithCert(link string, file RequestFileData) (WebhookConfig, error) {
 	u, err := url.Parse(link)
-
 	if err != nil {
 		return WebhookConfig{}, err
 	}
@@ -774,7 +776,8 @@ func NewInvoice(chatID int64, title, description, payload, providerToken, startP
 		ProviderToken:  providerToken,
 		StartParameter: startParameter,
 		Currency:       currency,
-		Prices:         prices}
+		Prices:         prices,
+	}
 }
 
 // NewChatTitle allows you to update the title of a chat.
