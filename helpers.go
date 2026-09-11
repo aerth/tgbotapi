@@ -15,6 +15,12 @@ func IsModifiedVersion() bool {
 	return true
 }
 
+func (m Message) BaseChat() BaseChat {
+	return BaseChat{
+		ChatID: m.Chat.ID,
+	}
+}
+
 // NewMessage creates a new Message.
 //
 // chatID is where to send it, text is the message text.
