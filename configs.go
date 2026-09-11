@@ -468,6 +468,9 @@ func (config AudioConfig) params() (Params, error) {
 	params.AddNonEmpty("title", config.Title)
 	params.AddNonEmpty("caption", config.Caption)
 	params.AddNonEmpty("parse_mode", config.ParseMode)
+	if config.Thumb != nil {
+		params["thumbnail"] = "attach://thumbnail"
+	}
 	err = params.AddInterface("caption_entities", config.CaptionEntities)
 
 	return params, err
@@ -485,10 +488,10 @@ func (config AudioConfig) files() []RequestFile {
 
 	if config.Thumb != nil {
 		slog.Info("uploading thumb", "thumb", config.Thumb)
-		files = append([]RequestFile{{
+		files = append(files, []RequestFile{{
 			Name: "thumbnail",
 			Data: config.Thumb,
-		}}, files[0])
+		}}...)
 	}
 
 	return files
