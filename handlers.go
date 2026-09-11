@@ -133,7 +133,7 @@ func (m Mux) Route(b *BotAPI, u Update) (Handler, bool) {
 
 var ErrOK = errors.New("ok")
 
-type HandlerFunc func(ctx context.Context, bot *BotAPI, update Update) error
+type HandlerFunc func(ctx context.Context, b *BotAPI, u Update) error
 
 type HandlerMiddleware = func(h Handler) Handler
 
