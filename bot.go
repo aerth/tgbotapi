@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"mime/multipart"
 	"net/http"
 	"net/url"
@@ -267,7 +268,6 @@ func (bot *BotAPI) UploadFiles(endpoint string, params Params, files []RequestFi
 // It requires the FileID.
 func (bot *BotAPI) GetFileDirectURL(fileID string) (string, error) {
 	file, err := bot.GetFile(FileConfig{fileID})
-
 	if err != nil {
 		return "", err
 	}
@@ -426,6 +426,8 @@ func (bot *BotAPI) GetWebhookInfo() (WebhookInfo, error) {
 	return info, err
 }
 
+var AutoShutdown = false
+
 // GetUpdatesChan starts and returns a channel for getting updates.
 func (bot *BotAPI) GetUpdatesChan(config UpdateConfig) UpdatesChannel {
 	ch := make(chan Update, bot.Buffer)
@@ -441,6 +443,12 @@ func (bot *BotAPI) GetUpdatesChan(config UpdateConfig) UpdatesChannel {
 
 			updates, err := bot.GetUpdates(config)
 			if err != nil {
+				if AutoShutdown && strings.Contains(err.Error(), "make sure that only one bot instance is running") {
+					slog.Error("other bot detected, shutting down telegram update-channel")
+					bot.StopReceivingUpdates()
+					time.Sleep(time.Second * 3)
+					continue
+				}
 				log.Println(err)
 				log.Println("Failed to get updates, retrying in 3 seconds...")
 				time.Sleep(time.Second * 3)
