@@ -23,7 +23,6 @@ func (m Message) BaseChat() BaseChat {
 	return BaseChat{
 		ChatID:           chat.ID,
 		ReplyToMessageID: m.MessageID,
-		ChannelUsername:  chat.ChannelUsername,
 	}
 }
 
