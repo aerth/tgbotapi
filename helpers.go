@@ -26,6 +26,17 @@ func (m Message) BaseChat() BaseChat {
 	}
 }
 
+func (m Message) NewReply() BaseChat {
+	var chat Chat
+	if m.Chat != nil {
+		chat = *m.Chat
+	}
+	return BaseChat{
+		ChatID:           chat.ID,
+		ReplyToMessageID: m.MessageID,
+	}
+}
+
 // NewMessage creates a new Message.
 //
 // chatID is where to send it, text is the message text.
