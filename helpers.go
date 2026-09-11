@@ -16,8 +16,14 @@ func IsModifiedVersion() bool {
 }
 
 func (m Message) BaseChat() BaseChat {
+	var chat Chat
+	if m.Chat != nil {
+		chat = *m.Chat
+	}
 	return BaseChat{
-		ChatID: m.Chat.ID,
+		ChatID:           chat.ID,
+		ReplyToMessageID: m.MessageID,
+		ChannelUsername:  chat.ChannelUsername,
 	}
 }
 
