@@ -6,12 +6,21 @@ import (
 	"log/slog"
 )
 
-type Mux struct {
-	routes      map[string]Handler
-	BaseContext context.Context
-	NewContext  func(ctx context.Context, u Update) context.Context
-}
+type (
+	Bot = BotAPI
+	Mux struct {
+		routes      map[string]Handler
+		Auth        func(b *BotAPI, u Update) bool
+		BaseContext context.Context
+		NewContext  func(ctx context.Context, u Update) context.Context
+	}
+)
 
+// NewMux returns an empty mux that ignores all commands.
+//
+// Use [[Mux.Handle]] and [[Mux.HandleFunc]] to add routes.
+//
+// See [[DefaultRoutePath]] and [[DefaultRouteCommandPath]] for special paths.
 func NewMux() *Mux {
 	return &Mux{routes: make(map[string]Handler)}
 }
@@ -36,6 +45,7 @@ func (mx *Mux) Run(basectx context.Context, b *BotAPI, config UpdateConfig) erro
 	if baser == nil {
 		baser = func(ctx context.Context, u Update) context.Context { return ctx }
 	}
+	auth := mx.Auth
 	ch := b.GetUpdatesChan(config)
 	defer b.StopReceivingUpdates()
 	for !b.isShutdown.Load() {
@@ -45,6 +55,9 @@ func (mx *Mux) Run(basectx context.Context, b *BotAPI, config UpdateConfig) erro
 		case u, ok := <-ch:
 			if !ok {
 				return context.Cause(basectx)
+			}
+			if auth != nil && !auth(b, u) {
+				continue
 			}
 
 			// get route
@@ -95,16 +108,25 @@ var (
 	ErrBreak                = errors.New("break")
 )
 
+const (
+	DefaultRoutePath   = ""  // non-message (some other update)
+	DefaultMessagePath = "!" // message non-command "hi"
+	DefaultCommandPath = "/" // message command unknown /nonexistant404
+)
+
 func (m Mux) Route(b *BotAPI, u Update) (Handler, bool) {
-	path := ""
-	if u.Message == nil {
-		path = "*"
-	} else if u.Message.IsCommand() {
+	path := DefaultRoutePath
+	switch {
+	case u.Message == nil:
+		path = DefaultRoutePath
+	case u.Message.IsCommand():
 		path = u.Message.Command()
+	default:
+		path = DefaultMessagePath
 	}
 	x, ok := m.routes[path]
-	if !ok && path != "" {
-		x, ok = m.routes[""] // default route
+	if !ok && u.Message != nil && u.Message.IsCommand() {
+		x, ok = m.routes[DefaultCommandPath] // default command route
 	}
 	return x, ok
 }
@@ -113,7 +135,7 @@ var ErrOK = errors.New("ok")
 
 type HandlerFunc func(ctx context.Context, bot *BotAPI, update Update) error
 
-type HandlerMiddleware func(h Handler) Handler
+type HandlerMiddleware = func(h Handler) Handler
 
 func (h HandlerFunc) HandleUpdate(ctx context.Context, b *BotAPI, u Update) error {
 	err := h(ctx, b, u)
