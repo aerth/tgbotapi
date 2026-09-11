@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"sync/atomic"
 	"time"
 )
 
@@ -31,6 +32,7 @@ type BotAPI struct {
 	shutdownChannel chan interface{}
 
 	apiEndpoint string
+	isShutdown  atomic.Bool
 }
 
 // NewBotAPI creates a new BotAPI instance.
@@ -94,7 +96,7 @@ func buildParams(in Params) url.Values {
 // MakeRequest makes a request to a specific endpoint with our token.
 func (bot *BotAPI) MakeRequest(endpoint string, params Params) (*APIResponse, error) {
 	if bot.Debug {
-		log.Printf("Endpoint: %s, params: %v\n", endpoint, params)
+		slog.Debug("telegram request", "endpoint", endpoint, "params", params)
 	}
 
 	method := fmt.Sprintf(bot.apiEndpoint, bot.Token, endpoint)
@@ -120,7 +122,7 @@ func (bot *BotAPI) MakeRequest(endpoint string, params Params) (*APIResponse, er
 	}
 
 	if bot.Debug {
-		log.Printf("Endpoint: %s, response: %s\n", endpoint, string(bytes))
+		slog.Debug("telegram response", "endpoint", endpoint, "response", json.RawMessage(bytes))
 	}
 
 	if !apiResp.Ok {
@@ -470,8 +472,11 @@ func (bot *BotAPI) GetUpdatesChan(config UpdateConfig) UpdatesChannel {
 
 // StopReceivingUpdates stops the go routine which receives updates
 func (bot *BotAPI) StopReceivingUpdates() {
+	if !bot.isShutdown.CompareAndSwap(false, true) {
+		return
+	}
 	if bot.Debug {
-		log.Println("Stopping the update receiver routine...")
+		slog.Warn("Stopping the update receiver routine...")
 	}
 	close(bot.shutdownChannel)
 }
