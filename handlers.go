@@ -25,8 +25,8 @@ func NewMux() *Mux {
 	return &Mux{routes: make(map[string]Handler)}
 }
 
-func (m *Mux) HandleFunc(path string, h HandlerFunc) {
-	m.Handle(path, h)
+func (m *Mux) HandleFunc(path string, h func(ctx context.Context, b *BotAPI, u Update) error) {
+	m.Handle(path, HandlerFunc(h))
 }
 
 func (m *Mux) Handle(path string, h Handler) {
