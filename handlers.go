@@ -124,8 +124,14 @@ func (m Mux) Route(b *BotAPI, u Update) (Handler, bool) {
 	default:
 		path = DefaultMessagePath
 	}
+	if b.Debug {
+		slog.Debug("looking for route", "path", path)
+	}
 	x, ok := m.routes[path]
 	if !ok && u.Message != nil && u.Message.IsCommand() {
+		if b.Debug {
+			slog.Debug("looking for route", "path", path)
+		}
 		x, ok = m.routes[DefaultCommandPath] // default command route
 	}
 	return x, ok
