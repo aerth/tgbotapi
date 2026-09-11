@@ -2570,3 +2570,37 @@ func prepareInputMediaForFiles(inputMedia []interface{}) []RequestFile {
 
 	return files
 }
+
+type MessageEmojiReactionConfig struct {
+	ChatID    int64  `json:"chat_id"`
+	MessageID int    `json:"message_id"`
+	Emoji     string `json:"reaction"` // empty to delete
+	IsBig     bool   `json:"is_big"`   // big animation
+}
+
+// method implements [Chattable].
+func (m MessageEmojiReactionConfig) method() string {
+	return "setMessageReaction"
+}
+
+// params implements [Chattable].
+func (m MessageEmojiReactionConfig) params() (Params, error) {
+	if m.ChatID == 0 || m.MessageID == 0 {
+		return nil, fmt.Errorf("need ChatID and MessageID")
+	}
+	params := make(Params)
+	params.AddNonZero64("chat_id", m.ChatID)
+	params.AddNonZero("message_id", m.MessageID)
+	params.AddBool("is_big", m.IsBig)
+	if err := params.AddAny("reaction", []map[string]string{
+		{
+			"type":  "emoji",
+			"emoji": m.Emoji,
+		},
+	}); err != nil {
+		return params, fmt.Errorf("%w", err)
+	}
+	return params, nil
+}
+
+var _ Chattable = MessageEmojiReactionConfig{}
