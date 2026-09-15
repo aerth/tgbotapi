@@ -267,3 +267,224 @@ type DirectMessagesTopic struct {
 	// of this field in the specification.
 	User *User `json:"user,omitempty"`
 }
+
+// Invoice contains the parameters for sending or creating an invoice link.
+type Invoice struct {
+	// ChatID is the unique identifier for the target chat or username of the target bot,
+	// supergroup or channel in the format @username.
+	// Can be int64 or string.
+	ChatID interface{} `json:"chat_id"`
+
+	// BusinessConnectionID is the unique identifier of the business connection on behalf
+	// of which the link will be created. For payments in Telegram Stars only.
+	// optional
+	BusinessConnectionID string `json:"business_connection_id,omitempty"`
+
+	// MessageThreadID is the unique identifier for the target message thread (topic).
+	// optional
+	MessageThreadID *int `json:"message_thread_id,omitempty"`
+
+	// DirectMessagesTopicID is the identifier of the direct messages topic.
+	// required if the message is sent to a direct messages chat.
+	// optional
+	DirectMessagesTopicID *int `json:"direct_messages_topic_id,omitempty"`
+
+	// Title is the product name (1-32 characters).
+	Title string `json:"title"`
+	// Description is the product description (1-255 characters).
+	Description string `json:"description"`
+	// Payload is a bot-defined invoice payload (1-128 bytes).
+	Payload string `json:"payload"`
+
+	// ProviderToken is the payment provider token, obtained via @BotFather.
+	// Pass an empty string for payments in Telegram Stars.
+	// optional
+	ProviderToken string `json:"provider_token,omitempty"`
+	// Currency is a three-letter ISO 4217 currency code. Pass “XTR” for Telegram Stars.
+	Currency string `json:"currency"`
+	// Prices is a list of labeled prices (must contain exactly one item for Telegram Stars).
+	Prices []LabeledPrice `json:"prices"`
+
+	// MaxTipAmount is the maximum accepted amount for tips in the smallest units.
+	// Defaults to 0. Not supported for payments in Telegram Stars.
+	// optional
+	MaxTipAmount int `json:"max_tip_amount,omitempty"`
+	// SuggestedTipAmounts is an array of suggested tip amounts in the smallest units.
+	// optional
+	SuggestedTipAmounts []int `json:"suggested_tip_amounts,omitempty"`
+
+	// StartParameter is a unique deep-linking parameter.
+	// optional
+	StartParameter string `json:"start_parameter,omitempty"`
+
+	// ProviderData is JSON-serialized data shared with the payment provider.
+	// optional
+	ProviderData string `json:"provider_data,omitempty"`
+
+	// PhotoURL is the URL of the product photo.
+	// optional
+	PhotoURL string `json:"photo_url,omitempty"`
+	// PhotoSize is the photo size in bytes.
+	// optional
+	PhotoSize *int `json:"photo_size,omitempty"`
+	// PhotoWidth is the photo width.
+	// optional
+	PhotoWidth *int `json:"photo_width,omitempty"`
+	// PhotoHeight is the photo height.
+	// optional
+	PhotoHeight *int `json:"photo_height,omitempty"`
+
+	// NeedName requires the user's full name. Ignored for Telegram Stars.
+	// optional
+	NeedName bool `json:"need_name,omitempty"`
+	// NeedPhoneNumber requires the user's phone number. Ignored for Telegram Stars.
+	// optional
+	NeedPhoneNumber bool `json:"need_phone_number,omitempty"`
+	// NeedEmail requires the user's email address. Ignored for Telegram Stars.
+	// optional
+	NeedEmail bool `json:"need_email,omitempty"`
+	// NeedShippingAddress requires the user's shipping address. Ignored for Telegram Stars.
+	// optional
+	NeedShippingAddress bool `json:"need_shipping_address,omitempty"`
+	// SendPhoneNumberToProvider sends the phone number to the provider. Ignored for Telegram Stars.
+	// optional
+	SendPhoneNumberToProvider bool `json:"send_phone_number_to_provider,omitempty"`
+	// SendEmailToProvider sends the email address to the provider. Ignored for Telegram Stars.
+	// optional
+	SendEmailToProvider bool `json:"send_email_to_provider,omitempty"`
+	// IsFlexible is true if the final price depends on the shipping method. Ignored for Telegram Stars.
+	// optional
+	IsFlexible bool `json:"is_flexible,omitempty"`
+
+	// DisableNotification sends the message silently.
+	// optional
+	DisableNotification bool `json:"disable_notification,omitempty"`
+	// ProtectContent protects the message from forwarding and saving.
+	// optional
+	ProtectContent bool `json:"protect_content,omitempty"`
+	// AllowPaidBroadcast allows up to 1000 messages per second (requires Stars).
+	// optional
+	AllowPaidBroadcast bool `json:"allow_paid_broadcast,omitempty"`
+
+	// MessageEffectID is a unique identifier for the message effect.
+	// optional
+	MessageEffectID string `json:"message_effect_id,omitempty"`
+
+	// SuggestedPostParameters contains parameters for the suggested post.
+	// optional
+	SuggestedPostParameters *SuggestedPostParameters `json:"suggested_post_parameters,omitempty"`
+	// ReplyParameters describes the message to be replied to.
+	// optional
+	ReplyParameters *ReplyParameters `json:"reply_parameters,omitempty"`
+}
+type SuggestedPostParameters struct {
+	Price    *SuggestedPostPrice `json:"price,omitempty"`
+	SendDate int64               `json:"send_date,omitempty"`
+}
+type SuggestedPostPrice struct {
+	Currency string `json:"currency"`
+	Ammount  int64  `json:"amount"`
+}
+
+// OldInvoice contains basic information about an invoice.
+type OldInvoice struct {
+	// Title product name
+	Title string `json:"title"`
+	// Description product description
+	Description string `json:"description"`
+	// StartParameter unique bot deep-linking parameter that can be used to generate this invoice
+	StartParameter string `json:"start_parameter"`
+	// Currency three-letter ISO 4217 currency code
+	// (see https://core.telegram.org/bots/payments#supported-currencies)
+	Currency string `json:"currency"`
+	// TotalAmount total price in the smallest units of the currency (integer, not float/double).
+	// For example, for a price of US$ 1.45 pass amount = 145.
+	// See the exp parameter in currencies.json
+	// (https://core.telegram.org/bots/payments/currencies.json),
+	// it shows the number of digits past the decimal point
+	// for each currency (2 for the majority of currencies).
+	TotalAmount int `json:"total_amount"`
+}
+
+// InputInvoiceMessageContent represents the content of an invoice message to be
+// sent as the result of an inline query.
+type InputInvoiceMessageContent struct {
+	// Product name, 1-32 characters
+	Title string `json:"title"`
+	// Product description, 1-255 characters
+	Description string `json:"description"`
+	// Bot-defined invoice payload, 1-128 bytes. This will not be displayed to
+	// the user, use for your internal processes.
+	Payload string `json:"payload"`
+	// Payment provider token, obtained via Botfather
+	ProviderToken string `json:"provider_token"`
+	// Three-letter ISO 4217 currency code
+	Currency string `json:"currency"`
+	// Price breakdown, a JSON-serialized list of components (e.g. product
+	// price, tax, discount, delivery cost, delivery tax, bonus, etc.)
+	Prices []LabeledPrice `json:"prices"`
+	// The maximum accepted amount for tips in the smallest units of the
+	// currency (integer, not float/double).
+	//
+	// optional
+	MaxTipAmount int `json:"max_tip_amount,omitempty"`
+	// An array of suggested amounts of tip in the smallest units of the
+	// currency (integer, not float/double). At most 4 suggested tip amounts can
+	// be specified. The suggested tip amounts must be positive, passed in a
+	// strictly increased order and must not exceed max_tip_amount.
+	//
+	// optional
+	SuggestedTipAmounts []int `json:"suggested_tip_amounts,omitempty"`
+	// A JSON-serialized object for data about the invoice, which will be shared
+	// with the payment provider. A detailed description of the required fields
+	// should be provided by the payment provider.
+	//
+	// optional
+	ProviderData string `json:"provider_data,omitempty"`
+	// URL of the product photo for the invoice. Can be a photo of the goods or
+	// a marketing image for a service. People like it better when they see what
+	// they are paying for.
+	//
+	// optional
+	PhotoURL string `json:"photo_url,omitempty"`
+	// Photo size
+	//
+	// optional
+	PhotoSize int `json:"photo_size,omitempty"`
+	// Photo width
+	//
+	// optional
+	PhotoWidth int `json:"photo_width,omitempty"`
+	// Photo height
+	//
+	// optional
+	PhotoHeight int `json:"photo_height,omitempty"`
+	// Pass True, if you require the user's full name to complete the order
+	//
+	// optional
+	NeedName bool `json:"need_name,omitempty"`
+	// Pass True, if you require the user's phone number to complete the order
+	//
+	// optional
+	NeedPhoneNumber bool `json:"need_phone_number,omitempty"`
+	// Pass True, if you require the user's email address to complete the order
+	//
+	// optional
+	NeedEmail bool `json:"need_email,omitempty"`
+	// Pass True, if you require the user's shipping address to complete the order
+	//
+	// optional
+	NeedShippingAddress bool `json:"need_shipping_address,omitempty"`
+	// Pass True, if user's phone number should be sent to provider
+	//
+	// optional
+	SendPhoneNumberToProvider bool `json:"send_phone_number_to_provider,omitempty"`
+	// Pass True, if user's email address should be sent to provider
+	//
+	// optional
+	SendEmailToProvider bool `json:"send_email_to_provider,omitempty"`
+	// Pass True, if the final price depends on the shipping method
+	//
+	// optional
+	IsFlexible bool `json:"is_flexible,omitempty"`
+}
