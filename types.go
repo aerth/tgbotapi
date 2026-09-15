@@ -114,6 +114,14 @@ type Update struct {
 	//
 	// optional
 	ChatJoinRequest *ChatJoinRequest `json:"chat_join_request,omitempty"`
+
+	// BusinessConnection - The bot was connected to or disconnected from a business account, or a user edited an existing connection with the bot
+	BusinessConnection    *BusinessConnection `json:"business_connection,omitempty"`
+	EditedBusinessMessage *Message            `json:"edited_business_message,omitempty"`
+	BusinessMessage       *Message            `json:"business_message,omitempty"`
+	GuestMessage          *Message            `json:"guest_message,omitempty"`
+	MessageReaction       json.RawMessage     `json:"message_reaction,omitempty"`
+	MessageReactionCount  json.RawMessage     `json:"message_reaction_count,omitempty"`
 }
 
 // SentFrom returns the user who sent an update. Can be nil, if Telegram did not provide information
@@ -379,7 +387,8 @@ type Message struct {
 	// ForwardFrom for forwarded messages, sender of the original message;
 	//
 	// optional
-	ForwardFrom *User `json:"forward_from,omitempty"`
+	ForwardFrom   *User          `json:"forward_from,omitempty"`
+	ForwardOrigin *MessageOrigin `json:"forward_origin,omitempty"`
 	// ForwardFromChat for messages forwarded from channels,
 	// information about the original channel;
 	//
@@ -594,6 +603,7 @@ type Message struct {
 	//
 	// optional
 	SuccessfulPayment *SuccessfulPayment `json:"successful_payment,omitempty"`
+	RefundedPayment   *RefundedPayment   `json:"refunded_payment,omitempty"`
 	// ConnectedWebsite is the domain name of the website on which the user has
 	// logged in;
 	//
@@ -634,10 +644,263 @@ type Message struct {
 	//
 	// optional
 	ReplyMarkup *InlineKeyboardMarkup `json:"reply_markup,omitempty"`
+
+	/* NEW */
+
+	// MessageThreadID is the unique identifier of a message thread or forum topic.
+	// For supergroups and private chats only.
+	// optional
+	MessageThreadID *int `json:"message_thread_id,omitempty"`
+
+	// DirectMessagesTopic is information about the direct messages chat topic.
+	// optional
+	DirectMessagesTopic *DirectMessagesTopic `json:"direct_messages_topic,omitempty"`
+
+	// SenderBusinessBot is the bot that actually sent the message on behalf of the business account.
+	// Available only for outgoing messages sent on behalf of the connected business account.
+	// optional
+	SenderBusinessBot *User `json:"sender_business_bot,omitempty"`
+
+	// SenderTag is a tag or custom title of the sender of the message; for supergroups only.
+	// optional
+	SenderTag string `json:"sender_tag,omitempty"`
+
+	// ReceiverUser is for ephemeral messages, the user who received the message.
+	// optional
+	ReceiverUser *User `json:"receiver_user,omitempty"`
+
+	// EphemeralMessageID is for ephemeral messages, the identifier of the ephemeral message.
+	// optional
+	EphemeralMessageID *int `json:"ephemeral_message_id,omitempty"`
+
+	// GuestQueryID is the unique identifier for the guest query.
+	// optional
+	GuestQueryID string `json:"guest_query_id,omitempty"`
+
+	// BusinessConnectionID is the unique identifier of the business connection from which the message was received.
+	// optional
+	BusinessConnectionID string `json:"business_connection_id,omitempty"`
+
+	// IsTopicMessage is true if the message is sent to a topic in a forum supergroup or a private chat with the bot.
+	// optional
+	IsTopicMessage bool `json:"is_topic_message,omitempty"`
+
+	// ExternalReply is information about the message that is being replied to, which may come from another chat.
+	// optional
+	ExternalReply *ExternalReplyInfo `json:"external_reply,omitempty"`
+
+	// Quote is for replies that quote part of the original message.
+	// optional
+	Quote *TextQuote `json:"quote,omitempty"`
+
+	// ReplyToStory is for replies to a story, the original story.
+	// optional
+	ReplyToStory json.RawMessage `json:"reply_to_story,omitempty"`
+
+	// ReplyToChecklistTaskID is the identifier of the specific checklist task being replied to.
+	// optional
+	ReplyToChecklistTaskID *int `json:"reply_to_checklist_task_id,omitempty"`
+
+	// ReplyToPollOptionID is the persistent identifier of the specific poll option being replied to.
+	// optional
+	ReplyToPollOptionID string `json:"reply_to_poll_option_id,omitempty"`
+
+	// ViaBot is already in your struct, but ensure it is used for all bot-related routing.
+
+	// GuestBotCallerUser is the user whose original message triggered the bot's response.
+	// optional
+	GuestBotCallerUser *User `json:"guest_bot_caller_user,omitempty"`
+
+	// GuestBotCallerChat is the chat whose original message triggered the bot's response.
+	// optional
+	GuestBotCallerChat *Chat `json:"guest_bot_caller_chat,omitempty"`
+
+	// EditDate is already in your struct.
+
+	// IsFromOffline is true if the message was sent by an implicit action (away message, etc).
+	// optional
+	IsFromOffline bool `json:"is_from_offline,omitempty"`
+
+	// IsPaidPost is true if the message is a paid post.
+	// optional
+	IsPaidPost bool `json:"is_paid_post,omitempty"`
+
+	// MediaGroupID is already in your struct.
+
+	// AuthorSignature is already in your struct.
+
+	// PaidStarCount is the number of Telegram Stars paid by the sender.
+	// optional
+	PaidStarCount int `json:"paid_star_count,omitempty"`
+
+	// LinkPreviewOptions are options used for link preview generation.
+	// optional
+	LinkPreviewOptions json.RawMessage `json:"link_preview_options,omitempty"`
+
+	// SuggestedPostInfo is information about a suggested post.
+	// optional
+	SuggestedPostInfo json.RawMessage `json:"suggested_post_info,omitempty"`
+
+	// EffectID is the unique identifier of the message effect added.
+	// optional
+	EffectID string `json:"effect_id,omitempty"`
+
+	// RichMessage is a rich formatted message.
+	// optional
+	RichMessage json.RawMessage `json:"rich_message,omitempty"` // string, []string, or {"text": "..."}
+
+	// PaidMedia is information about paid media.
+	// optional
+	PaidMedia json.RawMessage `json:"paid_media,omitempty"`
+
+	// CaptionEntities is already in your struct.
+
+	// ShowCaptionAboveMedia is true if the caption must be shown above the media.
+	// optional
+	ShowCaptionAboveMedia bool `json:"show_caption_above_media,omitempty"`
+
+	// HasMediaSpoiler is true if the message media is covered by a spoiler.
+	// optional
+	HasMediaSpoiler bool `json:"has_media_spoiler,omitempty"`
+
+	// Checklist is a checklist.
+	// optional
+	Checklist json.RawMessage `json:"checklist,omitempty"`
+
+	// GiftInfo is a service message: a regular gift was sent or received.
+	// optional
+	Gift json.RawMessage `json:"gift,omitempty"`
+
+	// UniqueGiftInfo is a service message: a unique gift was sent or received.
+	// optional
+	UniqueGift json.RawMessage `json:"unique_gift,omitempty"`
+
+	// GiftUpgradeSent is a service message: upgrade of a gift was purchased.
+	// optional
+	GiftUpgradeSent json.RawMessage `json:"gift_upgrade_sent,omitempty"`
+
+	// ConnectedWebsite is already in your struct.
+
+	// WriteAccessAllowed is already in your struct.
+
+	// PassportData is already in your struct.
+
+	// ProximityAlertTriggered is already in your struct.
+
+	// BoostAdded is a service message: user boosted the chat.
+	// optional
+	BoostAdded json.RawMessage `json:"boost_added,omitempty"`
+
+	// ChatBackgroundSet is a service message: chat background set.
+	// optional
+	ChatBackgroundSet json.RawMessage `json:"chat_background_set,omitempty"`
+
+	// ChecklistTasksDone is a service message: tasks marked as done.
+	// optional
+	ChecklistTasksDone json.RawMessage `json:"checklist_tasks_done,omitempty"`
+
+	// ChecklistTasksAdded is a service message: tasks added to a checklist.
+	// optional
+	ChecklistTasksAdded json.RawMessage `json:"checklist_tasks_added,omitempty"`
+
+	// CommunityChatAdded is a service message: chat or bot added to a Community.
+	// optional
+	CommunityChatAdded json.RawMessage `json:"community_chat_added,omitempty"`
+
+	// CommunityChatJoined is a service message: chat was joined by a user from a Community.
+	// optional
+	CommunityChatJoined json.RawMessage `json:"community_chat_joined,omitempty"`
+
+	// CommunityChatRemoved is a service message: chat or bot removed from a Community.
+	// optional
+	CommunityChatRemoved json.RawMessage `json:"community_chat_removed,omitempty"`
+
+	// DirectMessagePriceChanged is a service message: price for paid messages changed.
+	// optional
+	DirectMessagePriceChanged json.RawMessage `json:"direct_message_price_changed,omitempty"`
+
+	// ForumTopicCreated is a service message: forum topic created.
+	// optional
+	ForumTopicCreated json.RawMessage `json:"forum_topic_created,omitempty"`
+
+	// ForumTopicEdited is a service message: forum topic edited.
+	// optional
+	ForumTopicEdited json.RawMessage `json:"forum_topic_edited,omitempty"`
+
+	// ForumTopicClosed is a service message: forum topic closed.
+	// optional
+	ForumTopicClosed json.RawMessage `json:"forum_topic_closed,omitempty"`
+
+	// ForumTopicReopened is a service message: forum topic reopened.
+	// optional
+	ForumTopicReopened json.RawMessage `json:"forum_topic_reopened,omitempty"`
+
+	// GeneralForumTopicHidden is a service message: 'General' topic hidden.
+	// optional
+	GeneralForumTopicHidden json.RawMessage `json:"general_forum_topic_hidden,omitempty"`
+
+	// GeneralForumTopicUnhidden is a service message: 'General' topic unhidden.
+	// optional
+	GeneralForumTopicUnhidden json.RawMessage `json:"general_forum_topic_unhidden,omitempty"`
+
+	// GiveawayCreated is a service message: a scheduled giveaway was created.
+	// optional
+	GiveawayCreated json.RawMessage `json:"giveaway_created,omitempty"`
+
+	// Giveaway is a scheduled giveaway message.
+	// optional
+	Giveaway json.RawMessage `json:"giveaway,omitempty"`
+
+	// GiveawayWinners is a service message: a giveaway with public winners was completed.
+	// optional
+	GiveawayWinners json.RawMessage `json:"giveaway_winners,omitempty"`
+
+	// GiveawayCompleted is a service message: a giveaway without public winners was completed.
+	// optional
+	GiveawayCompleted json.RawMessage `json:"giveaway_completed,omitempty"`
+
+	// ManagedBotCreated is a service message: user created a bot that will be managed.
+	// optional
+	ManagedBotCreated json.RawMessage `json:"managed_bot_created,omitempty"`
+
+	// PaidMessagePriceChanged is a service message: the price for paid messages has changed.
+	// optional
+	PaidMessagePriceChanged json.RawMessage `json:"paid_message_price_changed,omitempty"`
+
+	// PollOptionAdded is a service message: answer option was added to a poll.
+	// optional
+	PollOptionAdded json.RawMessage `json:"poll_option_added,omitempty"`
+
+	// PollOptionDeleted is a service message: answer option was deleted from a poll.
+	// optional
+	PollOptionDeleted json.RawMessage `json:"poll_option_deleted,omitempty"`
+
+	// SuggestedPostApproved is a service message: a suggested post was approved.
+	// optional
+	SuggestedPostApproved json.RawMessage `json:"suggested_post_approved,omitempty"`
+
+	// SuggestedPostApprovalFailed is a service message: approval failed.
+	// optional
+	SuggestedPostApprovalFailed json.RawMessage `json:"suggested_post_approval_failed,omitempty"`
+
+	// SuggestedPostDeclined is a service message: a suggested post was declined.
+	// optional
+	SuggestedPostDeclined json.RawMessage `json:"suggested_post_declined,omitempty"`
+
+	// SuggestedPostPaid is a service message: payment for a suggested post was received.
+	// optional
+	SuggestedPostPaid json.RawMessage `json:"suggested_post_paid,omitempty"`
+
+	// SuggestedPostRefunded is a service message: payment for a suggested post was refunded.
+	// optional
+	SuggestedPostRefunded json.RawMessage `json:"suggested_post_refunded,omitempty"`
 }
 
 // Time converts the message timestamp into a Time.
 func (m *Message) Time() time.Time {
+	if m.Date == 0 {
+		return time.Time{}
+	}
 	return time.Unix(int64(m.Date), 0)
 }
 
@@ -3287,6 +3550,16 @@ type SuccessfulPayment struct {
 	TelegramPaymentChargeID string `json:"telegram_payment_charge_id"`
 	// ProviderPaymentChargeID provider payment identifier
 	ProviderPaymentChargeID string `json:"provider_payment_charge_id"`
+
+	// SubscriptionExpirationDate expiration date of the subscription, in Unix time; for recurring payments only.
+	// optional
+	SubscriptionExpirationDate int `json:"subscription_expiration_date,omitempty"`
+	// IsRecurring true, if the payment is a recurring payment for a subscription.
+	// optional
+	IsRecurring bool `json:"is_recurring,omitempty"`
+	// IsFirstRecurring true, if the payment is the first payment for a subscription.
+	// optional
+	IsFirstRecurring bool `json:"is_first_recurring,omitempty"`
 }
 
 // ShippingQuery contains information about an incoming shipping query.

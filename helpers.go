@@ -981,7 +981,7 @@ func NewDeleteMyCommandsWithScopeAndLanguage(scope BotCommandScope, languageCode
 func ValidateWebAppData(token, telegramInitData string) (bool, error) {
 	initData, err := url.ParseQuery(telegramInitData)
 	if err != nil {
-		return false, fmt.Errorf("error parsing data %w", err)
+		return false, Errorf("error parsing data %w", err)
 	}
 
 	dataCheckString := make([]string, 0, len(initData))

@@ -113,7 +113,7 @@ func (bot *BotAPI) MakeRequest(endpoint string, params Params) (*APIResponse, er
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	var apiResp APIResponse
 	bytes, err := bot.decodeAPIResponse(resp.Body, &apiResp)
@@ -122,7 +122,7 @@ func (bot *BotAPI) MakeRequest(endpoint string, params Params) (*APIResponse, er
 	}
 
 	if bot.Debug {
-		slog.Debug("telegram response", "endpoint", endpoint, "response", json.RawMessage(bytes))
+		Slog().Debug("telegram response", "endpoint", endpoint, "response", json.RawMessage(bytes))
 	}
 
 	if !apiResp.Ok {
@@ -428,6 +428,7 @@ func (bot *BotAPI) GetWebhookInfo() (WebhookInfo, error) {
 	return info, err
 }
 
+// AutoShutdown closes updates channel when another bot instance is detected
 var AutoShutdown = false
 
 // GetUpdatesChan starts and returns a channel for getting updates.
@@ -446,15 +447,13 @@ func (bot *BotAPI) GetUpdatesChan(config UpdateConfig) UpdatesChannel {
 			updates, err := bot.GetUpdates(config)
 			if err != nil {
 				if AutoShutdown && strings.Contains(err.Error(), "make sure that only one bot instance is running") {
-					slog.Error("other bot detected, shutting down telegram update-channel")
+					Slog().Error("shutting down update channel", "err", err)
 					bot.StopReceivingUpdates()
-					time.Sleep(time.Second * 3)
-					continue
+					close(ch)
+					return
 				}
-				log.Println(err)
-				log.Println("Failed to get updates, retrying in 3 seconds...")
-				time.Sleep(time.Second * 3)
-
+				Slog().Debug("Failed to get updates, waiting to retry", "d", WaitDuration, "err", err)
+				time.Sleep(WaitDuration)
 				continue
 			}
 
@@ -470,13 +469,15 @@ func (bot *BotAPI) GetUpdatesChan(config UpdateConfig) UpdatesChannel {
 	return ch
 }
 
+var WaitDuration = 3 * time.Second
+
 // StopReceivingUpdates stops the go routine which receives updates
 func (bot *BotAPI) StopReceivingUpdates() {
 	if !bot.isShutdown.CompareAndSwap(false, true) {
 		return
 	}
 	if bot.Debug {
-		slog.Warn("Stopping the update receiver routine...")
+		Slog().Warn("Stopping the update receiver routine...")
 	}
 	close(bot.shutdownChannel)
 }

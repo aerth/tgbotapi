@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"log/slog"
 	"net/url"
 	"os"
 	"strconv"
@@ -437,7 +436,7 @@ func (config PhotoConfig) files() []RequestFile {
 
 	if config.Thumb != nil {
 		files = append(files, RequestFile{
-			Name: "thumb",
+			Name: "thumbnail",
 			Data: config.Thumb,
 		})
 	}
@@ -487,7 +486,6 @@ func (config AudioConfig) files() []RequestFile {
 	}}
 
 	if config.Thumb != nil {
-		slog.Info("uploading thumb", "thumb", config.Thumb)
 		files = append(files, []RequestFile{{
 			Name: "thumbnail",
 			Data: config.Thumb,
@@ -529,7 +527,7 @@ func (config DocumentConfig) files() []RequestFile {
 
 	if config.Thumb != nil {
 		files = append(files, RequestFile{
-			Name: "thumb",
+			Name: "thumbnail",
 			Data: config.Thumb,
 		})
 	}
@@ -2180,7 +2178,7 @@ func (config SetStickerSetThumbConfig) params() (Params, error) {
 
 func (config SetStickerSetThumbConfig) files() []RequestFile {
 	return []RequestFile{{
-		Name: "thumb",
+		Name: "thumbnail",
 		Data: config.Thumb,
 	}}
 }
