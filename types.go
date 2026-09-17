@@ -225,6 +225,14 @@ type User struct {
 	//
 	// optional
 	SupportsInlineQueries bool `json:"supports_inline_queries,omitempty"`
+
+	AddedToAttachmentMenu      bool `json:"added_to_attachment_menu,omitempty"`
+	CanConnectToBusiness       bool `json:"can_connect_to_business,omitempty"`
+	HasMainWebApp              bool `json:"has_main_web_app,omitempty"`
+	HasTopicsEnabled           bool `json:"has_topics_enabled,omitempty"`
+	AllowsUsersToCreateTopics  bool `json:"allows_users_to_create_topics,omitempty"`
+	CanManageBots              bool `json:"can_manage_bots,omitempty"`
+	SupportsJoinRequestQueries bool `json:"supports_join_request_queries,omitempty"`
 }
 
 // String displays a simple text version of a user.
@@ -270,7 +278,7 @@ type Chat struct {
 	// optional
 	LastName string `json:"last_name,omitempty"`
 	// Photo is a chat photo
-	Photo *ChatPhoto `json:"photo"`
+	Photo *ChatPhoto `json:"photo" gorm:"serializer:json;type:jsonb;default:null;"`
 	// Bio is the bio of the other party in a private chat. Returned only in
 	// getChat
 	//
@@ -295,12 +303,12 @@ type Chat struct {
 	// PinnedMessage is the pinned message, for groups, supergroups and channels
 	//
 	// optional
-	PinnedMessage *Message `json:"pinned_message,omitempty"`
+	PinnedMessage *Message `json:"pinned_message,omitempty" gorm:"serializer:json;type:jsonb;default:null;"`
 	// Permissions are default chat member permissions, for groups and
 	// supergroups. Returned only in getChat.
 	//
 	// optional
-	Permissions *ChatPermissions `json:"permissions,omitempty"`
+	Permissions *ChatPermissions `json:"permissions,omitempty" gorm:"serializer:json;type:jsonb;default:null;"`
 	// SlowModeDelay is for supergroups, the minimum allowed delay between
 	// consecutive messages sent by each unprivileged user. Returned only in
 	// getChat.
@@ -337,7 +345,7 @@ type Chat struct {
 	// connected. Returned only in getChat.
 	//
 	// optional
-	Location *ChatLocation `json:"location,omitempty"`
+	Location *ChatLocation `json:"location,omitempty" gorm:"serializer:json;type:jsonb;default:null;"`
 }
 
 // IsPrivate returns if the Chat is a private conversation.
@@ -366,34 +374,36 @@ func (c Chat) ChatConfig() ChatConfig {
 }
 
 // Message represents a message.
+//
+// see [MessageConfig]
 type Message struct {
 	// MessageID is a unique message identifier inside this chat
-	MessageID int `json:"message_id"`
+	MessageID int `json:"message_id,omitempty"`
 	// From is a sender, empty for messages sent to channels;
 	//
 	// optional
-	From *User `json:"from,omitempty"`
+	From *User `json:"from,omitempty" gorm:"serializer:json;type:jsonb;default:null;"`
 	// SenderChat is the sender of the message, sent on behalf of a chat. The
 	// channel itself for channel messages. The supergroup itself for messages
 	// from anonymous group administrators. The linked channel for messages
 	// automatically forwarded to the discussion group
 	//
 	// optional
-	SenderChat *Chat `json:"sender_chat,omitempty"`
+	SenderChat *Chat `json:"sender_chat,omitempty" gorm:"serializer:json;type:jsonb;default:null;"`
 	// Date of the message was sent in Unix time
-	Date int `json:"date"`
+	Date int64 `json:"date,omitempty"`
 	// Chat is the conversation the message belongs to
-	Chat *Chat `json:"chat"`
+	Chat *Chat `json:"chat,omitempty" gorm:"serializer:json;type:jsonb;default:null;"`
 	// ForwardFrom for forwarded messages, sender of the original message;
 	//
 	// optional
-	ForwardFrom   *User          `json:"forward_from,omitempty"`
-	ForwardOrigin *MessageOrigin `json:"forward_origin,omitempty"`
+	ForwardFrom   *User          `json:"forward_from,omitempty" gorm:"serializer:json;type:jsonb;default:null;"`
+	ForwardOrigin *MessageOrigin `json:"forward_origin,omitempty" gorm:"serializer:json;type:jsonb;default:null;"`
 	// ForwardFromChat for messages forwarded from channels,
 	// information about the original channel;
 	//
 	// optional
-	ForwardFromChat *Chat `json:"forward_from_chat,omitempty"`
+	ForwardFromChat *Chat `json:"forward_from_chat,omitempty" gorm:"serializer:json;type:jsonb;default:null;"`
 	// ForwardFromMessageID for messages forwarded from channels,
 	// identifier of the original message in the channel;
 	//
@@ -423,11 +433,11 @@ type Message struct {
 	// even if it itself is a reply;
 	//
 	// optional
-	ReplyToMessage *Message `json:"reply_to_message,omitempty"`
+	ReplyToMessage *Message `json:"reply_to_message,omitempty" gorm:"serializer:json;type:jsonb;default:null;"`
 	// ViaBot through which the message was sent;
 	//
 	// optional
-	ViaBot *User `json:"via_bot,omitempty"`
+	ViaBot *User `json:"via_bot,omitempty" gorm:"serializer:json;type:jsonb;default:null;"`
 	// EditDate of the message was last edited in Unix time;
 	//
 	// optional
@@ -452,45 +462,45 @@ type Message struct {
 	// URLs, bot commands, etc. that appear in the text;
 	//
 	// optional
-	Entities []MessageEntity `json:"entities,omitempty"`
+	Entities []MessageEntity `json:"entities,omitempty" gorm:"serializer:json;type:jsonb;default:null;"`
 	// Animation message is an animation, information about the animation.
 	// For backward compatibility, when this field is set, the document field will also be set;
 	//
 	// optional
-	Animation *Animation `json:"animation,omitempty"`
+	Animation *Animation `json:"animation,omitempty" gorm:"serializer:json;type:jsonb;default:null;"`
 	// PremiumAnimation message is an animation, information about the animation.
 	// For backward compatibility, when this field is set, the document field will also be set;
 	//
 	// optional
-	PremiumAnimation *Animation `json:"premium_animation,omitempty"`
+	PremiumAnimation *Animation `json:"premium_animation,omitempty" gorm:"serializer:json;type:jsonb;default:null;"`
 	// Audio message is an audio file, information about the file;
 	//
 	// optional
-	Audio *Audio `json:"audio,omitempty"`
+	Audio *Audio `json:"audio,omitempty" gorm:"serializer:json;type:jsonb;default:null;"`
 	// Document message is a general file, information about the file;
 	//
 	// optional
-	Document *Document `json:"document,omitempty"`
+	Document *Document `json:"document,omitempty" gorm:"serializer:json;type:jsonb;default:null;"`
 	// Photo message is a photo, available sizes of the photo;
 	//
 	// optional
-	Photo []PhotoSize `json:"photo,omitempty"`
+	Photo []PhotoSize `json:"photo,omitempty" gorm:"-"` // TODO: gorm this one
 	// Sticker message is a sticker, information about the sticker;
 	//
 	// optional
-	Sticker *Sticker `json:"sticker,omitempty"`
+	Sticker *Sticker `json:"sticker,omitempty" gorm:"serializer:json;type:jsonb;default:null;"`
 	// Video message is a video, information about the video;
 	//
 	// optional
-	Video *Video `json:"video,omitempty"`
+	Video *Video `json:"video,omitempty" gorm:"serializer:json;type:jsonb;default:null;"`
 	// VideoNote message is a video note, information about the video message;
 	//
 	// optional
-	VideoNote *VideoNote `json:"video_note,omitempty"`
+	VideoNote *VideoNote `json:"video_note,omitempty" gorm:"serializer:json;type:jsonb;default:null;"`
 	// Voice message is a voice message, information about the file;
 	//
 	// optional
-	Voice *Voice `json:"voice,omitempty"`
+	Voice *Voice `json:"voice,omitempty" gorm:"serializer:json;type:jsonb;default:null;"`
 	// Caption for the animation, audio, document, photo, video or voice, 0-1024 characters;
 	//
 	// optional
@@ -498,43 +508,43 @@ type Message struct {
 	// CaptionEntities;
 	//
 	// optional
-	CaptionEntities []MessageEntity `json:"caption_entities,omitempty"`
+	CaptionEntities []MessageEntity `json:"caption_entities,omitempty" gorm:"serializer:json;type:jsonb;default:null;"`
 	// Contact message is a shared contact, information about the contact;
 	//
 	// optional
-	Contact *Contact `json:"contact,omitempty"`
+	Contact *Contact `json:"contact,omitempty" gorm:"serializer:json;type:jsonb;default:null;"`
 	// Dice is a dice with random value;
 	//
 	// optional
-	Dice *Dice `json:"dice,omitempty"`
+	Dice *Dice `json:"dice,omitempty" gorm:"serializer:json;type:jsonb;default:null;"`
 	// Game message is a game, information about the game;
 	//
 	// optional
-	Game *Game `json:"game,omitempty"`
+	Game *Game `json:"game,omitempty" gorm:"serializer:json;type:jsonb;default:null;"`
 	// Poll is a native poll, information about the poll;
 	//
 	// optional
-	Poll *Poll `json:"poll,omitempty"`
+	Poll *Poll `json:"poll,omitempty" gorm:"serializer:json;type:jsonb;default:null;"`
 	// Venue message is a venue, information about the venue.
 	// For backward compatibility, when this field is set, the location field
 	// will also be set;
 	//
 	// optional
-	Venue *Venue `json:"venue,omitempty"`
+	Venue *Venue `json:"venue,omitempty" gorm:"serializer:json;type:jsonb;default:null;"`
 	// Location message is a shared location, information about the location;
 	//
 	// optional
-	Location *Location `json:"location,omitempty"`
+	Location *Location `json:"location,omitempty" gorm:"serializer:json;type:jsonb;default:null;"`
 	// NewChatMembers that were added to the group or supergroup
 	// and information about them (the bot itself may be one of these members);
 	//
 	// optional
-	NewChatMembers []User `json:"new_chat_members,omitempty"`
+	NewChatMembers []User `json:"new_chat_members,omitempty" gorm:"serializer:json;type:jsonb;default:null;"`
 	// LeftChatMember is a member was removed from the group,
 	// information about them (this member may be the bot itself);
 	//
 	// optional
-	LeftChatMember *User `json:"left_chat_member,omitempty"`
+	LeftChatMember *User `json:"left_chat_member,omitempty" gorm:"serializer:json;type:jsonb;default:null;"`
 	// NewChatTitle is a chat title was changed to this value;
 	//
 	// optional
@@ -542,7 +552,7 @@ type Message struct {
 	// NewChatPhoto is a chat photo was change to this value;
 	//
 	// optional
-	NewChatPhoto []PhotoSize `json:"new_chat_photo,omitempty"`
+	NewChatPhoto []PhotoSize `json:"new_chat_photo,omitempty" gorm:"serializer:json;type:jsonb;default:null;"`
 	// DeleteChatPhoto is a service message: the chat photo was deleted;
 	//
 	// optional
@@ -571,7 +581,7 @@ type Message struct {
 	// settings changed in the chat.
 	//
 	// optional
-	MessageAutoDeleteTimerChanged *MessageAutoDeleteTimerChanged `json:"message_auto_delete_timer_changed,omitempty"`
+	MessageAutoDeleteTimerChanged *MessageAutoDeleteTimerChanged `json:"message_auto_delete_timer_changed,omitempty" gorm:"serializer:json;type:jsonb;default:null;"`
 	// MigrateToChatID is the group has been migrated to a supergroup with the specified identifier.
 	// This number may be greater than 32 bits and some programming languages
 	// may have difficulty/silent defects in interpreting it.
@@ -593,17 +603,17 @@ type Message struct {
 	// fields even if it is itself a reply;
 	//
 	// optional
-	PinnedMessage *Message `json:"pinned_message,omitempty"`
+	PinnedMessage *Message `json:"pinned_message,omitempty" gorm:"serializer:json;type:jsonb;default:null;"`
 	// Invoice message is an invoice for a payment;
 	//
 	// optional
-	Invoice *Invoice `json:"invoice,omitempty"`
+	Invoice *Invoice `json:"invoice,omitempty" gorm:"serializer:json;type:jsonb;default:null;"`
 	// SuccessfulPayment message is a service message about a successful payment,
 	// information about the payment;
 	//
 	// optional
-	SuccessfulPayment *SuccessfulPayment `json:"successful_payment,omitempty"`
-	RefundedPayment   *RefundedPayment   `json:"refunded_payment,omitempty"`
+	SuccessfulPayment *SuccessfulPayment `json:"successful_payment,omitempty" gorm:"serializer:json;type:jsonb;default:null;"`
+	RefundedPayment   *RefundedPayment   `json:"refunded_payment,omitempty" gorm:"serializer:json;type:jsonb;default:null;"`
 	// ConnectedWebsite is the domain name of the website on which the user has
 	// logged in;
 	//
@@ -612,54 +622,54 @@ type Message struct {
 	// PassportData is a Telegram Passport data;
 	//
 	// optional
-	PassportData *PassportData `json:"passport_data,omitempty"`
+	PassportData *PassportData `json:"passport_data,omitempty" gorm:"serializer:json;type:jsonb;default:null;"`
 	// ProximityAlertTriggered is a service message. A user in the chat
 	// triggered another user's proximity alert while sharing Live Location
 	//
 	// optional
-	ProximityAlertTriggered *ProximityAlertTriggered `json:"proximity_alert_triggered,omitempty"`
+	ProximityAlertTriggered *ProximityAlertTriggered `json:"proximity_alert_triggered,omitempty" gorm:"serializer:json;type:jsonb;default:null;"`
 	// VideoChatScheduled is a service message: video chat scheduled.
 	//
 	// optional
-	VideoChatScheduled *VideoChatScheduled `json:"video_chat_scheduled,omitempty"`
+	VideoChatScheduled *VideoChatScheduled `json:"video_chat_scheduled,omitempty" gorm:"serializer:json;type:jsonb;default:null;"`
 	// VideoChatStarted is a service message: video chat started.
 	//
 	// optional
-	VideoChatStarted *VideoChatStarted `json:"video_chat_started,omitempty"`
+	VideoChatStarted *VideoChatStarted `json:"video_chat_started,omitempty" gorm:"serializer:json;type:jsonb;default:null;"`
 	// VideoChatEnded is a service message: video chat ended.
 	//
 	// optional
-	VideoChatEnded *VideoChatEnded `json:"video_chat_ended,omitempty"`
+	VideoChatEnded *VideoChatEnded `json:"video_chat_ended,omitempty" gorm:"serializer:json;type:jsonb;default:null;"`
 	// VideoChatParticipantsInvited is a service message: new participants
 	// invited to a video chat.
 	//
 	// optional
-	VideoChatParticipantsInvited *VideoChatParticipantsInvited `json:"video_chat_participants_invited,omitempty"`
+	VideoChatParticipantsInvited *VideoChatParticipantsInvited `json:"video_chat_participants_invited,omitempty" gorm:"serializer:json;type:jsonb;default:null;"`
 	// WebAppData is a service message: data sent by a Web App.
 	//
 	// optional
-	WebAppData *WebAppData `json:"web_app_data,omitempty"`
+	WebAppData *WebAppData `json:"web_app_data,omitempty" gorm:"serializer:json;type:jsonb;default:null;"`
 	// ReplyMarkup is the Inline keyboard attached to the message.
 	// login_url buttons are represented as ordinary url buttons.
 	//
 	// optional
-	ReplyMarkup *InlineKeyboardMarkup `json:"reply_markup,omitempty"`
+	ReplyMarkup *InlineKeyboardMarkup `json:"reply_markup,omitempty" gorm:"serializer:json;type:jsonb;default:null;"`
 
 	/* NEW */
 
 	// MessageThreadID is the unique identifier of a message thread or forum topic.
 	// For supergroups and private chats only.
 	// optional
-	MessageThreadID *int `json:"message_thread_id,omitempty"`
+	MessageThreadID *int `json:"message_thread_id,omitempty" gorm:"serializer:json;type:jsonb;default:null;"`
 
 	// DirectMessagesTopic is information about the direct messages chat topic.
 	// optional
-	DirectMessagesTopic *DirectMessagesTopic `json:"direct_messages_topic,omitempty"`
+	DirectMessagesTopic *DirectMessagesTopic `json:"direct_messages_topic,omitempty" gorm:"serializer:json;type:jsonb;default:null;"`
 
 	// SenderBusinessBot is the bot that actually sent the message on behalf of the business account.
 	// Available only for outgoing messages sent on behalf of the connected business account.
 	// optional
-	SenderBusinessBot *User `json:"sender_business_bot,omitempty"`
+	SenderBusinessBot *User `json:"sender_business_bot,omitempty" gorm:"serializer:json;type:jsonb;default:null;"`
 
 	// SenderTag is a tag or custom title of the sender of the message; for supergroups only.
 	// optional
@@ -667,11 +677,11 @@ type Message struct {
 
 	// ReceiverUser is for ephemeral messages, the user who received the message.
 	// optional
-	ReceiverUser *User `json:"receiver_user,omitempty"`
+	ReceiverUser *User `json:"receiver_user,omitempty" gorm:"serializer:json;type:jsonb;default:null;"`
 
 	// EphemeralMessageID is for ephemeral messages, the identifier of the ephemeral message.
 	// optional
-	EphemeralMessageID *int `json:"ephemeral_message_id,omitempty"`
+	EphemeralMessageID *int `json:"ephemeral_message_id,omitempty" gorm:"serializer:json;type:jsonb;default:null;"`
 
 	// GuestQueryID is the unique identifier for the guest query.
 	// optional
@@ -687,19 +697,19 @@ type Message struct {
 
 	// ExternalReply is information about the message that is being replied to, which may come from another chat.
 	// optional
-	ExternalReply *ExternalReplyInfo `json:"external_reply,omitempty"`
+	ExternalReply *ExternalReplyInfo `json:"external_reply,omitempty" gorm:"serializer:json;type:jsonb;default:null;"`
 
 	// Quote is for replies that quote part of the original message.
 	// optional
-	Quote *TextQuote `json:"quote,omitempty"`
+	Quote *TextQuote `json:"quote,omitempty" gorm:"serializer:json;type:jsonb;default:null;"`
 
 	// ReplyToStory is for replies to a story, the original story.
 	// optional
-	ReplyToStory json.RawMessage `json:"reply_to_story,omitempty"`
+	ReplyToStory json.RawMessage `json:"reply_to_story,omitempty" gorm:"serializer:json;type:jsonb;default:null;"`
 
 	// ReplyToChecklistTaskID is the identifier of the specific checklist task being replied to.
 	// optional
-	ReplyToChecklistTaskID *int `json:"reply_to_checklist_task_id,omitempty"`
+	ReplyToChecklistTaskID *int `json:"reply_to_checklist_task_id,omitempty" gorm:"serializer:json;type:jsonb;default:null;"`
 
 	// ReplyToPollOptionID is the persistent identifier of the specific poll option being replied to.
 	// optional
@@ -709,11 +719,11 @@ type Message struct {
 
 	// GuestBotCallerUser is the user whose original message triggered the bot's response.
 	// optional
-	GuestBotCallerUser *User `json:"guest_bot_caller_user,omitempty"`
+	GuestBotCallerUser *User `json:"guest_bot_caller_user,omitempty" gorm:"serializer:json;type:jsonb;default:null;"`
 
 	// GuestBotCallerChat is the chat whose original message triggered the bot's response.
 	// optional
-	GuestBotCallerChat *Chat `json:"guest_bot_caller_chat,omitempty"`
+	GuestBotCallerChat *Chat `json:"guest_bot_caller_chat,omitempty" gorm:"serializer:json;type:jsonb;default:null;"`
 
 	// EditDate is already in your struct.
 
@@ -735,11 +745,11 @@ type Message struct {
 
 	// LinkPreviewOptions are options used for link preview generation.
 	// optional
-	LinkPreviewOptions json.RawMessage `json:"link_preview_options,omitempty"`
+	LinkPreviewOptions json.RawMessage `json:"link_preview_options,omitempty" gorm:"serializer:json;type:jsonb;default:null;"`
 
 	// SuggestedPostInfo is information about a suggested post.
 	// optional
-	SuggestedPostInfo json.RawMessage `json:"suggested_post_info,omitempty"`
+	SuggestedPostInfo json.RawMessage `json:"suggested_post_info,omitempty" gorm:"serializer:json;type:jsonb;default:null;"`
 
 	// EffectID is the unique identifier of the message effect added.
 	// optional
@@ -747,11 +757,11 @@ type Message struct {
 
 	// RichMessage is a rich formatted message.
 	// optional
-	RichMessage json.RawMessage `json:"rich_message,omitempty"` // string, []string, or {"text": "..."}
+	RichMessage json.RawMessage `json:"rich_message,omitempty" gorm:"serializer:json;type:jsonb;default:null;"` // string, []string, or {"text": "..."}
 
 	// PaidMedia is information about paid media.
 	// optional
-	PaidMedia json.RawMessage `json:"paid_media,omitempty"`
+	PaidMedia json.RawMessage `json:"paid_media,omitempty" gorm:"serializer:json;type:jsonb;default:null;"`
 
 	// CaptionEntities is already in your struct.
 
@@ -765,43 +775,35 @@ type Message struct {
 
 	// Checklist is a checklist.
 	// optional
-	Checklist json.RawMessage `json:"checklist,omitempty"`
+	Checklist json.RawMessage `json:"checklist,omitempty" gorm:"serializer:json;type:jsonb;default:null;"`
 
 	// GiftInfo is a service message: a regular gift was sent or received.
 	// optional
-	Gift json.RawMessage `json:"gift,omitempty"`
+	Gift json.RawMessage `json:"gift,omitempty" gorm:"serializer:json;type:jsonb;default:null;"`
 
 	// UniqueGiftInfo is a service message: a unique gift was sent or received.
 	// optional
-	UniqueGift json.RawMessage `json:"unique_gift,omitempty"`
+	UniqueGift json.RawMessage `json:"unique_gift,omitempty" gorm:"serializer:json;type:jsonb;default:null;"`
 
 	// GiftUpgradeSent is a service message: upgrade of a gift was purchased.
 	// optional
-	GiftUpgradeSent json.RawMessage `json:"gift_upgrade_sent,omitempty"`
-
-	// ConnectedWebsite is already in your struct.
-
-	// WriteAccessAllowed is already in your struct.
-
-	// PassportData is already in your struct.
-
-	// ProximityAlertTriggered is already in your struct.
+	GiftUpgradeSent json.RawMessage `json:"gift_upgrade_sent,omitempty" gorm:"serializer:json;type:jsonb;default:null;"`
 
 	// BoostAdded is a service message: user boosted the chat.
 	// optional
-	BoostAdded json.RawMessage `json:"boost_added,omitempty"`
+	BoostAdded json.RawMessage `json:"boost_added,omitempty" gorm:"serializer:json;type:jsonb;default:null;"`
 
 	// ChatBackgroundSet is a service message: chat background set.
 	// optional
-	ChatBackgroundSet json.RawMessage `json:"chat_background_set,omitempty"`
+	ChatBackgroundSet json.RawMessage `json:"chat_background_set,omitempty" gorm:"serializer:json;type:jsonb;default:null;"`
 
 	// ChecklistTasksDone is a service message: tasks marked as done.
 	// optional
-	ChecklistTasksDone json.RawMessage `json:"checklist_tasks_done,omitempty"`
+	ChecklistTasksDone json.RawMessage `json:"checklist_tasks_done,omitempty" gorm:"serializer:json;type:jsonb;default:null;"`
 
 	// ChecklistTasksAdded is a service message: tasks added to a checklist.
 	// optional
-	ChecklistTasksAdded json.RawMessage `json:"checklist_tasks_added,omitempty"`
+	ChecklistTasksAdded json.RawMessage `json:"checklist_tasks_added,omitempty" gorm:"serializer:json;type:jsonb;default:null;"`
 
 	// CommunityChatAdded is a service message: chat or bot added to a Community.
 	// optional
@@ -1859,7 +1861,7 @@ type ChatAdministratorRights struct {
 // ChatMember contains information about one member of a chat.
 type ChatMember struct {
 	// User information about the user
-	User *User `json:"user"`
+	User *User `json:"user" gorm:"embedded"`
 	// Status the member's status in the chat.
 	// Can be
 	//  “creator”,
