@@ -9,13 +9,50 @@ import (
 	"slices"
 )
 
+var Slog = slog.Default
+
+type ctxk string
+
+const CtxPath ctxk = "handler:path"
+
+func (bot *BotAPI) GetRoutePath(ctx context.Context) (string, bool) {
+	path, ok := ctx.Value(CtxPath).(string)
+	return path, ok
+}
+
+// GetMessage returns the u.Message or an empty non-nil Message
+func (bot *BotAPI) GetMessage(u Update) *Message {
+	if u.Message == nil {
+		return &Message{}
+	}
+	return u.Message
+}
+
+func (bot *BotAPI) GetReply(u Update) ReplyParameters {
+	if u.Message == nil || u.Message.Chat == nil {
+		return ReplyParameters{}
+	}
+	return ReplyParameters{
+		MessageID:                new(u.Message.MessageID),
+		ChatID:                   u.Message.Chat.ID,
+		AllowSendingWithoutReply: true,
+	}
+}
+
+const (
+	DefaultRoutePath   = ""  // Route Path: non-message (some other update)
+	DefaultMessagePath = "!" // Route Path: message non-command "hi" but also important Message.XX members -- check msg.Text == ""
+	DefaultCommandPath = "/" // Route Path: message command unknown /nonexistant404
+)
+
 type Bot = BotAPI
 
 type Mux struct {
-	Auth        func(b *BotAPI, u Update) bool                      // First after decoding update, may return false to discard update
-	BaseContext context.Context                                     // may be a mainctx
-	NewContext  func(ctx context.Context, u Update) context.Context // may be used to modify a context based on the u Update.
-	routes      map[string]Handler                                  //
+	Auth         func(b *BotAPI, u Update) bool                      // First after decoding update, may return false to discard update
+	BaseContext  context.Context                                     // may be a mainctx
+	NewContext   func(ctx context.Context, u Update) context.Context // may be used to modify a context based on the u Update.
+	routes       map[string]Handler                                  //
+	GetRoutePath func(u Update) (string, bool)                       // for custom non-message mini-router, see [GetRoutePath] for default if this is nil
 }
 
 var Errorf = fmt.Errorf
@@ -25,15 +62,44 @@ var (
 
 	// ErrBreak may be returned by a HandlerFunc to close bot connection
 	//
-	// For example, a "quit'"
+	// For example, a "quit" command from admin user
 	ErrBreak = errors.New("break")
 )
 
-const (
-	DefaultRoutePath   = ""  // non-message (some other update)
-	DefaultMessagePath = "!" // message non-command "hi" but also important Message.XX members -- check msg.Text == ""
-	DefaultCommandPath = "/" // message command unknown /nonexistant404
-)
+// ErrorLogger called if a Handler returns an error.
+//
+// This should not typically send additional telegram requests/messages.
+var ErrorLogger = func(ctx context.Context, b *BotAPI, u Update, h Handler, err error) {
+	path, ok := b.GetRoutePath(ctx)
+	if !ok {
+		path = "[unknown]"
+	}
+	Slog().Error("handler", "path", path, "err", fmt.Sprintf("%+v", err))
+}
+
+// HandleLaunchBG may be overrided to add a waitgroup or other sync mechanisms
+var HandleLaunchBG = func(ctx context.Context, b *BotAPI, u Update, h Handler) func() error {
+	go func() {
+		if err := h.HandleUpdate(ctx, b, u); err != nil {
+			ErrorLogger(ctx, b, u, h, err)
+			if errors.Is(err, ErrBreak) {
+				b.StopReceivingUpdates() // shutdown channel
+			}
+		}
+	}()
+	return nil
+}
+var HandleLaunch = HandleLaunchBG
+
+var HandleLaunchFG = func(ctx context.Context, b *BotAPI, u Update, h Handler) func() error {
+	return func() error {
+		err := h.HandleUpdate(ctx, b, u)
+		if errors.Is(err, ErrBreak) {
+			b.StopReceivingUpdates() // shutdown channel
+		}
+		return err
+	}
+}
 
 // CommandPaths returns all the known commands
 func CommandPaths(mux *Mux) []string {
@@ -43,7 +109,7 @@ func CommandPaths(mux *Mux) []string {
 	})
 }
 
-func CommandPathString(v string) string {
+func RoutePathString(v string) string {
 	if v == "" {
 		return "[DEFAULT-ROUTE]"
 	}
@@ -63,7 +129,7 @@ func CommandPathString(v string) string {
 //
 // See [DefaultRoutePath] [DefaultMessagePath] and [DefaultRouteCommandPath] for special paths.
 func NewMux() *Mux {
-	return &Mux{routes: make(map[string]Handler), BaseContext: context.Background(), NewContext: nil, Auth: nil}
+	return &Mux{routes: make(map[string]Handler), BaseContext: context.Background(), NewContext: nil, Auth: nil, GetRoutePath: GetRoutePath}
 }
 
 // HandleFunc like [http.ServeMux.HandleFunc]
@@ -93,6 +159,8 @@ type Handler interface {
 	HandleUpdate(ctx context.Context, b *BotAPI, u Update) error
 }
 
+var Log404 = true
+
 func (mx *Mux) Run(basectx context.Context, b *BotAPI, config UpdateConfig) error {
 	baser := mx.NewContext
 	if baser == nil {
@@ -114,75 +182,80 @@ func (mx *Mux) Run(basectx context.Context, b *BotAPI, config UpdateConfig) erro
 			}
 
 			// get route
-			h, ok := mx.Route(b, u)
+			path, h, ok := mx.Route(b, u)
 			if !ok {
-				if b.Debug {
-					Slog().Debug("skipping route not found", "u", u)
+				if b.Debug && Log404 {
+					Slog().Debug("route not found", "u", u)
 				}
 				continue
 			}
 			ctx := baser(basectx, u)
-
-			// launcher fg or bg
-			launcher := HandleLaunch(ctx, b, u, h)
-			if launcher == nil { // bg
-				continue
-			}
-			if err := launcher(); err != nil {
-				Slog().Error("HandleUpdate", "err", err)
-				if errors.Is(err, ErrBreak) {
-					return err
-				}
+			ctx = context.WithValue(ctx, CtxPath, path)
+			if fatalerr := mx.handle(ctx, b, u, h, path); fatalerr != nil {
+				return fatalerr
 			}
 		}
 	}
 	return nil
 }
 
-var Slog = slog.Default
-
-var HandleLaunch = HandleLaunchBG
-
-var HandleLaunchFG = func(ctx context.Context, b *BotAPI, u Update, h Handler) func() error {
-	return func() error {
-		return h.HandleUpdate(ctx, b, u)
+// handle returns fatal error only, but logs non-fatal errors
+func (mx *Mux) handle(ctx context.Context, b *BotAPI, u Update, h Handler, path string) error {
+	// launcher fg or bg
+	launcher := HandleLaunch(ctx, b, u, h)
+	if launcher == nil { // bg
+		return nil
 	}
-}
-
-var HandleLaunchBG = func(ctx context.Context, b *BotAPI, u Update, h Handler) func() error {
-	go func() {
-		if err := h.HandleUpdate(ctx, b, u); err != nil {
-			Slog().Error("HandleUpdate", "err", err)
+	if err := launcher(); err != nil {
+		ErrorLogger(ctx, b, u, h, err)
+		if errors.Is(err, ErrBreak) {
+			return err
 		}
-	}()
+	}
 	return nil
 }
 
-func (m Mux) Route(b *BotAPI, u Update) (Handler, bool) {
-	var path string
+// GetRoutePath overrides the router, may return a different route path string based on the Update.
+// Essentially a mini-router, useful for non-message (such as GuestMessage, Callbacks, etc)
+//
+// If returned bool is false, this is ignored and routing proceeds.
+// If returned bool is true, other routing logic is bypassed.
+// If true and path returned is unregistered, the update will be ignored.
+//
+// For example: case u.GuestMessage != nil: return "_guest", true
+var GetRoutePath = func(u Update) (string, bool) {
+	return DefaultRoutePath, false
+}
+
+// Route an update to a Handler, using GetRoutePath first, finally falling back to DefaultRoutePath
+func (m Mux) Route(b *BotAPI, u Update) (path string, h Handler, found bool) {
+	if m.GetRoutePath != nil {
+		custom, ok := m.GetRoutePath(u)
+		if ok {
+			x, ok := m.routes[custom]
+			return custom, x, ok
+		}
+	}
 	switch {
 	case u.Message == nil:
 		path = DefaultRoutePath
 	case u.Message.IsCommand():
 		path = u.Message.Command() // eg: "start" or "help"
 	default:
-		path = DefaultMessagePath
-	}
-	if b.Debug {
-		Slog().Debug("looking for route", "path", path)
+		path = DefaultMessagePath // has a u.Message that is not a command
 	}
 	x, ok := m.routes[path]
-	if !ok && u.Message != nil && u.Message.IsCommand() {
+	if ok || path == DefaultRoutePath { // found
+		return path, x, ok
+	}
+	if u.Message != nil && u.Message.IsCommand() {
 		x, ok = m.routes[DefaultCommandPath] // default command route
-		if b.Debug {
-			Slog().Debug("looking for default command route", "path", path, "ok", ok)
-		}
-	} else {
-		if b.Debug {
-			Slog().Debug("looking for route", "path", path, "ok", ok)
+		if ok {
+			return DefaultCommandPath, x, ok
 		}
 	}
-	return x, ok
+	x, ok = m.routes[DefaultRoutePath]
+	return path, x, ok
 }
 
 // HandlerFunc wrapper like [http.HandlerFunc]
