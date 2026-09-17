@@ -264,25 +264,28 @@ func (CloseConfig) params() (Params, error) {
 
 // BaseChat is base type for all chat config types.
 type BaseChat struct {
-	ChatID                   int64 // required
-	ChannelUsername          string
-	ProtectContent           bool
-	ReplyToMessageID         int
-	ReplyMarkup              interface{}
-	DisableNotification      bool
-	AllowSendingWithoutReply bool
+	ChatID                   int64  `json:"chat_id,omitempty"`
+	ChannelUsername          string `json:"channel_username,omitempty"`
+	ProtectContent           bool   `json:"protect_content"`
+	ReplyToMessageID         int    `json:"reply_to_message_id,omitempty"`
+	ReplyMarkup              any    `json:"reply_markup,omitempty"`
+	DisableNotification      bool   `json:"disable_notification,omitempty"`
+	AllowSendingWithoutReply bool   `json:"allow_sending_without_reply,omitempty"`
 }
 
 func (chat *BaseChat) params() (Params, error) {
 	params := make(Params)
 
-	params.AddFirstValid("chat_id", chat.ChatID, chat.ChannelUsername)
+	err := params.AddFirstValid("chat_id", chat.ChatID, chat.ChannelUsername)
+	if err != nil {
+		return nil, err
+	}
 	params.AddNonZero("reply_to_message_id", chat.ReplyToMessageID)
 	params.AddBool("disable_notification", chat.DisableNotification)
 	params.AddBool("allow_sending_without_reply", chat.AllowSendingWithoutReply)
 	params.AddBool("protect_content", chat.ProtectContent)
 
-	err := params.AddInterface("reply_markup", chat.ReplyMarkup)
+	err = params.AddInterface("reply_markup", chat.ReplyMarkup)
 
 	return params, err
 }
@@ -322,12 +325,48 @@ func (edit BaseEdit) params() (Params, error) {
 }
 
 // MessageConfig contains information about a SendMessage request.
+//
+// see [Message]
 type MessageConfig struct {
 	BaseChat
-	Text                  string
-	ParseMode             string
-	Entities              []MessageEntity
-	DisableWebPagePreview bool
+	Text                  string              `json:"text,omitempty"`
+	ParseMode             string              `json:"parse_mode,omitempty"`
+	Entities              []MessageEntity     `json:"entities,omitempty"`
+	DisableWebPagePreview bool                `json:"disable_webpage_preview,omitempty"`
+	LinkPreviewOptions    *LinkPreviewOptions `json:"link_preview_options,omitempty"`
+	ReplyParameters       *ReplyParameters    `json:"reply_parameters,omitempty"`
+	ReplyMarkup           any                 `json:"reply_markup,omitempty"`
+
+	MessageThreadId       *int64 `json:"message_thread_id,omitempty"`
+	DirectMessagesTopicId *int64 `json:"direct_messages_topic_id,omitempty"`
+	DisableNotification   *bool  `json:"disable_notification,omitempty"`
+	ProtectContent        *bool  `json:"protect_content,omitempty"`
+	AllowPaidBroadcast    *bool  `json:"allow_paid_broadcast,omitempty"`
+	MessageEffectId       string `json:"message_effect_id,omitempty"`
+
+	// tmp
+	DraftID int `json:"draft_id,omitempty"` // for MessageDraftConfig
+}
+type LinkPreviewOptions struct {
+	IsDisabled       bool   `json:"is_disabled,omitempty"`
+	URL              string `json:"url,omitempty"`
+	PreferSmallMedia bool   `json:"prefer_small_media,omitempty"`
+	PreferLargeMedia bool   `json:"prefer_large_media,omitempty"`
+	ShowAboveText    bool   `json:"show_above_text,omitempty"`
+}
+
+func (config MessageConfig) method() string {
+	return "sendMessage"
+}
+
+type MessageDraftConfig MessageConfig
+
+func (config MessageDraftConfig) method() string {
+	return "sendMessageDraft"
+}
+
+func (config MessageDraftConfig) params() (Params, error) {
+	return MessageConfig(config).params()
 }
 
 func (config MessageConfig) params() (Params, error) {
@@ -337,15 +376,103 @@ func (config MessageConfig) params() (Params, error) {
 	}
 
 	params.AddNonEmpty("text", config.Text)
+
+	params.AddNonEmpty("text", config.Text)
+	if err := params.AddFirstValid("chat_id", config.BaseChat.ChatID, config.BaseChat.ChannelUsername); err != nil {
+		return nil, err
+	}
+
+	// 2. Thread/Topic Management
+	if config.MessageThreadId != nil {
+		params.AddNonZero64("message_thread_id", *config.MessageThreadId)
+	}
+	if config.DirectMessagesTopicId != nil {
+		params.AddNonZero64("direct_messages_topic_id", *config.DirectMessagesTopicId)
+	}
+
+	// 3. Content Protection & Notifications
+	if config.DisableNotification != nil {
+		params.AddBool("disable_notification", *config.DisableNotification)
+	}
+	if config.ProtectContent != nil {
+		params.AddBool("protect_content", *config.ProtectContent)
+	}
+
+	// 4. Advanced/Special Features
+	if config.AllowPaidBroadcast != nil {
+		params.AddBool("allow_paid_broadcast", *config.AllowPaidBroadcast)
+	}
+	if config.MessageEffectId != "" { // Go way to check empty string
+		params.AddNonEmpty("message_effect_id", config.MessageEffectId)
+	}
+
+	// 5. Link Previews
+	if config.LinkPreviewOptions != nil {
+		if err := params.AddInterface("link_preview_options", config.LinkPreviewOptions); err != nil {
+			return nil, err
+		}
+	}
+
+	// 6. Replying & Keyboards
+	if config.ReplyParameters != nil {
+		if err := params.AddInterface("reply_parameters", config.ReplyParameters); err != nil {
+			return nil, err
+		}
+	}
+	if config.ReplyMarkup != nil {
+		if err := params.AddInterface("reply_markup", config.ReplyMarkup); err != nil {
+			return nil, err
+		}
+	}
+
+	params.AddBool("disable_web_page_preview", config.DisableWebPagePreview)
+
+	// 2. Thread/Topic Management
+	if config.MessageThreadId != nil {
+		params.AddNonZero64("message_thread_id", *config.MessageThreadId)
+	}
+	if config.DirectMessagesTopicId != nil {
+		params.AddNonZero64("direct_messages_topic_id", *config.DirectMessagesTopicId)
+	}
+
+	// 3. Content Protection & Notifications
+	if config.DisableNotification != nil {
+		params.AddBool("disable_notification", *config.DisableNotification)
+	}
+	if config.ProtectContent != nil {
+		params.AddBool("protect_content", *config.ProtectContent)
+	}
+
+	// 4. Advanced/Special Features
+	if config.AllowPaidBroadcast != nil {
+		params.AddBool("allow_paid_broadcast", *config.AllowPaidBroadcast)
+	}
+	params.AddNonEmpty("message_effect_id", config.MessageEffectId)
+
+	// 5. Link Previews (The modern way to handle previews)
+	if config.LinkPreviewOptions != nil {
+		err := params.AddInterface("link_preview_options", config.LinkPreviewOptions)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	// 6. Replying & Keyboards
+	if config.ReplyParameters != nil {
+		err := params.AddInterface("reply_parameters", config.ReplyParameters)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if config.ReplyMarkup != nil {
+		params.AddInterface("reply_markup", config.ReplyMarkup)
+	}
+
 	params.AddBool("disable_web_page_preview", config.DisableWebPagePreview)
 	params.AddNonEmpty("parse_mode", config.ParseMode)
 	err = params.AddInterface("entities", config.Entities)
 
 	return params, err
-}
-
-func (config MessageConfig) method() string {
-	return "sendMessage"
 }
 
 // ForwardConfig contains information about a ForwardMessage request.
