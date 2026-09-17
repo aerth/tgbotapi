@@ -3,6 +3,7 @@
 package tgbotapi
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -94,15 +95,79 @@ func buildParams(in Params) url.Values {
 }
 
 // MakeRequest makes a request to a specific endpoint with our token.
+//
+// The response contains a JSON object, which always has a Boolean field 'ok'
+// and may have an optional String field 'description' with a human-readable
+// description of the result. If 'ok' equals True, the request was successful
+// and the result of the query can be found in the 'result' field. In case of
+// an unsuccessful request, 'ok' equals False and the error is explained in
+// the 'description'. An Integer 'error_code' field is also returned, but its
+// contents are subject to change in the future. Some errors may also have an
+// optional field 'parameters' of the type ResponseParameters, which can help
+// to automatically handle the error.
 func (bot *BotAPI) MakeRequest(endpoint string, params Params) (*APIResponse, error) {
-	if bot.Debug {
-		slog.Debug("telegram request", "endpoint", endpoint, "params", params)
-	}
-
-	method := fmt.Sprintf(bot.apiEndpoint, bot.Token, endpoint)
-
 	values := buildParams(params)
+	return bot.MakeRequestForm(endpoint, values)
+}
 
+// SendJSON returns a Message (if the resp does not contain a message, use MakeRequestJSON instead)
+func (bot *BotAPI) SendJSON(endpoint string, val any) (*Message, error) {
+	resp, err := bot.MakeRequestJSON(endpoint, val)
+	if err != nil {
+		return nil, err
+	}
+	var message Message
+	err = json.Unmarshal(resp.Result, &message)
+	if err != nil {
+		return nil, err
+	}
+	return &message, nil
+}
+
+// MakeRequestJSON is not for uploading files
+func (bot *BotAPI) MakeRequestJSON(endpoint string, val any) (*APIResponse, error) {
+	js, ok := val.(json.RawMessage)
+	if !ok {
+		var err error
+		js, err = json.Marshal(val)
+		if err != nil {
+			return nil, Errorf("Marshal: %w", err)
+		}
+	}
+	method := fmt.Sprintf(bot.apiEndpoint, bot.Token, endpoint)
+	req, err := http.NewRequest("POST", method, bytes.NewReader(js))
+	if err != nil {
+		return nil, Errorf("newreq %w", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+	resp, err := bot.Client.Do(req)
+	if err != nil {
+		return nil, Errorf("http: %w", err)
+	}
+	defer func() { _ = resp.Body.Close() }()
+	js, err = io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, Errorf("read body: %w", err)
+	}
+	var apiresp APIResponse
+	err = json.Unmarshal(js, &apiresp)
+	if err != nil {
+		Slog().Error("rawjs", "response", js)
+		return nil, Errorf("decode body: %w", err)
+	}
+	if !apiresp.Ok {
+		return nil, Errorf("api: %s (code %d)", apiresp.Description, apiresp.ErrorCode)
+	}
+	return &apiresp, nil
+}
+
+var ErrNotOK = errors.New("not ok")
+
+func (bot *BotAPI) MakeRequestForm(endpoint string, values url.Values) (*APIResponse, error) {
+	if bot.Debug {
+		slog.Debug("telegram request", "endpoint", endpoint, "params", values.Encode())
+	}
+	method := fmt.Sprintf(bot.apiEndpoint, bot.Token, endpoint)
 	req, err := http.NewRequest("POST", method, strings.NewReader(values.Encode()))
 	if err != nil {
 		return &APIResponse{}, err
