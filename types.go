@@ -244,7 +244,7 @@ func (u *User) String() string {
 		return ""
 	}
 	if u.UserName != "" {
-		return u.UserName
+		return "@" + u.UserName
 	}
 
 	name := u.FirstName
@@ -252,7 +252,7 @@ func (u *User) String() string {
 		name += " " + u.LastName
 	}
 
-	return name
+	return strings.ToValidUTF8(name, "")
 }
 
 // Chat represents a chat.
@@ -660,7 +660,7 @@ type Message struct {
 	// MessageThreadID is the unique identifier of a message thread or forum topic.
 	// For supergroups and private chats only.
 	// optional
-	MessageThreadID *int `json:"message_thread_id,omitempty" gorm:"serializer:json;type:jsonb;default:null;"`
+	MessageThreadID *int64 `json:"message_thread_id,omitempty" gorm:"serializer:json;type:jsonb;default:null;"`
 
 	// DirectMessagesTopic is information about the direct messages chat topic.
 	// optional
