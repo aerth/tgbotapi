@@ -8,7 +8,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log/slog"
 	"mime/multipart"
 	"net/http"
 	"net/url"
@@ -165,7 +164,7 @@ var ErrNotOK = errors.New("not ok")
 
 func (bot *BotAPI) MakeRequestForm(endpoint string, values url.Values) (*APIResponse, error) {
 	if bot.Debug {
-		slog.Debug("telegram request", "endpoint", endpoint, "params", values.Encode())
+		Slog().Debug("telegram request", "endpoint", endpoint, "params", values.Encode())
 	}
 	method := fmt.Sprintf(bot.apiEndpoint, bot.Token, endpoint)
 	req, err := http.NewRequest("POST", method, strings.NewReader(values.Encode()))
@@ -217,7 +216,7 @@ func (bot *BotAPI) decodeAPIResponse(responseBody io.Reader, resp *APIResponse) 
 		return nil, err
 	}
 
-	// if debug, read response body
+	// if debug, copy and return response body
 	data, err := io.ReadAll(responseBody)
 	if err != nil {
 		return nil, err
