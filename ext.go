@@ -1,6 +1,9 @@
 package tgbotapi
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"time"
+)
 
 /*
 *   `business_connection`
@@ -53,18 +56,24 @@ type BusinessBotRights struct {
 // BusinessConnection describes the connection of the bot with a business account.
 type BusinessConnection struct {
 	// Id is the unique identifier of the business connection.
-	Id string `json:"id"`
+	Id string `json:"id" gorm:"primaryKey"`
 	// User is the business account user that created the business connection.
-	User *User `json:"user,omitempty"`
+	User *User `json:"user,omitempty" gorm:"serializer:json;type:jsonb;default:null;"`
 	// UserChatId is the identifier of a private chat with the user who created the business connection.
-	// Using int64 to handle up to 52 significant bits.
 	UserChatId int64 `json:"user_chat_id"`
 	// Date is the date the connection was established in Unix time.
-	Date int `json:"date"`
+	Date int64 `json:"date"`
 	// Rights is the rights of the business bot.
-	Rights *BusinessBotRights `json:"rights,omitempty"`
+	Rights *BusinessBotRights `json:"rights,omitempty" gorm:"serializer:json;type:jsonb;default:null;"`
 	// IsEnabled is true if the connection is active.
 	IsEnabled bool `json:"is_enabled"`
+}
+
+func (b BusinessConnection) Time() time.Time {
+	if b.Date == 0 {
+		return time.Time{}
+	}
+	return time.Unix(b.Date, 0)
 }
 
 // BusinessMessagesDeleted is received when messages are deleted from a connected business account.
@@ -487,4 +496,56 @@ type InputInvoiceMessageContent struct {
 	//
 	// optional
 	IsFlexible bool `json:"is_flexible,omitempty"`
+}
+
+type ManagedBotConfig struct {
+	UserID int64 `json:"user_id"`
+}
+
+func (b *BotAPI) GetManagedBotToken(otherBotUserID int64) (string, error) {
+	got, err := b.MakeRequestJSON("getManagedBotToken", map[string]any{"user_id": otherBotUserID})
+	token := ""
+	err = json.Unmarshal(got.Result, &token)
+	if err != nil {
+		return "", Errorf("%w", err)
+	}
+	return token, nil
+}
+
+func (b *BotAPI) ReplaceManagedBotToken(otherBotUserID int64) (string, error) {
+	got, err := b.MakeRequestJSON("replaceManagedBotToken", map[string]any{"user_id": otherBotUserID})
+	token := ""
+	err = json.Unmarshal(got.Result, &token)
+	if err != nil {
+		return "", Errorf("%w", err)
+	}
+	return token, nil
+}
+
+type BotAccessSettings struct {
+	IsAccessRestricted bool   `json:"is_access_restricted"` // True, if only selected users can access the bot. The bot's owner can always access it.
+	AddedUsers         []User // Optional. The list of other users who have access to the bot if the access is restricted
+}
+
+func (b *BotAPI) GetManagedBotSettings(otherBotUserID int64) (BotAccessSettings, error) {
+	got, err := b.MakeRequestJSON("replaceManagedBotToken", map[string]any{"user_id": otherBotUserID})
+	var access BotAccessSettings
+	err = json.Unmarshal(got.Result, &access)
+	if err != nil {
+		return BotAccessSettings{}, Errorf("%w", err)
+	}
+	return access, nil
+}
+
+func (bot *BotAPI) GetBusinessConnection(businessConnectionID string) (BusinessConnection, error) {
+	got, err := bot.MakeRequestJSON("getBusinessConnection", map[string]string{"business_connection_id": businessConnectionID})
+	if err != nil {
+		return BusinessConnection{}, Errorf("%w", err)
+	}
+	conn := BusinessConnection{}
+	err = json.Unmarshal(got.Result, &conn)
+	if err != nil {
+		return BusinessConnection{}, Errorf("%w", err)
+	}
+	return conn, nil
 }
