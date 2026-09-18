@@ -756,7 +756,7 @@ func (bot *BotAPI) GetMyCommandsWithConfig(config GetMyCommandsConfig) ([]BotCom
 }
 
 // CopyMessage copy messages of any kind. The method is analogous to the method
-// forwardMessage, but the copied message doesn't have a link to the original
+// forwardMessage ([BotAPI.ForwardMessage]), but the copied message doesn't have a link to the original
 // message. Returns the MessageID of the sent message on success.
 func (bot *BotAPI) CopyMessage(config CopyMessageConfig) (int, error) {
 	resp, err := bot.Request(config)
