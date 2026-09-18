@@ -343,6 +343,7 @@ type MessageConfig struct {
 	ProtectContent        *bool  `json:"protect_content,omitempty"`
 	AllowPaidBroadcast    *bool  `json:"allow_paid_broadcast,omitempty"`
 	MessageEffectId       string `json:"message_effect_id,omitempty"`
+	BusinessConnectionID  string `json:"business_connection_id,omitempty"`
 
 	// tmp
 	DraftID int `json:"draft_id,omitempty"` // for MessageDraftConfig
@@ -1105,12 +1106,21 @@ func (config GetGameHighScoresConfig) method() string {
 type ChatActionConfig struct {
 	BaseChat
 	Action string // required
+
+	BusinessConnectionID string
+	MessageThreadID      *int64
 }
 
 func (config ChatActionConfig) params() (Params, error) {
 	params, err := config.BaseChat.params()
 
 	params["action"] = config.Action
+	if config.BusinessConnectionID != "" {
+		params["business_connection_id"] = config.BusinessConnectionID
+	}
+	if config.MessageThreadID != nil {
+		params["message_thread_id"] = fmt.Sprint(*config.MessageThreadID)
+	}
 
 	return params, err
 }
@@ -2699,9 +2709,26 @@ func prepareInputMediaForFiles(inputMedia []interface{}) []RequestFile {
 type MessageEmojiReactionConfig struct {
 	ChatID    int64  `json:"chat_id"`
 	MessageID int    `json:"message_id"`
-	Emoji     string `json:"reaction"` // empty to delete
+	Emoji     string `json:"reaction"` // empty to delete, one of: "❤", "👍", "👎", "🔥", "🥰", "👏", "😁", "🤔", "🤯", "😱", "🤬", "😢", "🎉", "🤩", "🤮", "💩", "🙏", "👌", "🕊", "🤡", "🥱", "🥴", "😍", "🐳", "❤‍🔥", "🌚", "🌭", "💯", "🤣", "⚡", "🍌", "🏆", "💔", "🤨", "😐", "🍓", "🍾", "💋", "🖕", "😈", "😴", "😭", "🤓", "👻", "👨‍💻", "👀", "🎃", "🙈", "😇", "😨", "🤝", "✍", "🤗", "🫡", "🎅", "🎄", "☃", "💅", "🤪", "🗿", "🆒", "💘", "🙉", "🦄", "😘", "💊", "🙊", "😎", "👾", "🤷‍♂", "🤷", "🤷‍♀", "😡"
 	IsBig     bool   `json:"is_big"`   // big animation
 }
+
+var ValidEmojiReactions = []string{
+	"❤", "👍", "👎", "🔥", "🥰", "👏",
+	"😁", "🤔", "🤯", "😱", "🤬", "😢",
+	"🎉", "🤩", "🤮", "💩", "🙏", "👌",
+	"🕊", "🤡", "🥱", "🥴", "😍", "🐳",
+	"❤‍🔥", "🌚", "🌭", "💯", "🤣", "⚡",
+	"🍌", "🏆", "💔", "🤨", "😐", "🍓",
+	"🍾", "💋", "🖕", "😈", "😴", "😭",
+	"🤓", "👻", "👨‍💻", "👀", "🎃", "🙈",
+	"😇", "😨", "🤝", "✍", "🤗", "🫡", "🎅",
+	"🎄", "☃", "💅", "🤪", "🗿", "🆒", "💘",
+	"🙉", "🦄", "😘", "💊", "🙊", "😎", "👾",
+	"🤷‍♂", "🤷", "🤷‍♀", "😡",
+}
+
+const PaidEmoji = "paid" // star emoji
 
 // method implements [Chattable].
 func (m MessageEmojiReactionConfig) method() string {
