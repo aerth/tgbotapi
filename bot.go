@@ -758,16 +758,16 @@ func (bot *BotAPI) GetMyCommandsWithConfig(config GetMyCommandsConfig) ([]BotCom
 // CopyMessage copy messages of any kind. The method is analogous to the method
 // forwardMessage, but the copied message doesn't have a link to the original
 // message. Returns the MessageID of the sent message on success.
-func (bot *BotAPI) CopyMessage(config CopyMessageConfig) (MessageID, error) {
+func (bot *BotAPI) CopyMessage(config CopyMessageConfig) (int, error) {
 	resp, err := bot.Request(config)
 	if err != nil {
-		return MessageID{}, err
+		return 0, err
 	}
 
 	var messageID MessageID
 	err = json.Unmarshal(resp.Result, &messageID)
 
-	return messageID, err
+	return messageID.MessageID, err
 }
 
 // AnswerWebAppQuery sets the result of an interaction with a Web App and send a
