@@ -114,7 +114,10 @@ func TestCopyMessage(t *testing.T) {
 		t.Error(err)
 	}
 
-	if messageID.MessageID == message.MessageID {
+	if messageID == 0 {
+		t.Error("copied message ID is zero")
+	}
+	if messageID == message.MessageID {
 		t.Error("copied message ID was the same as original message")
 	}
 }
