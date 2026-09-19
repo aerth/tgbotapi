@@ -567,16 +567,12 @@ func ParseRetryAfter(err error) int {
 	// (\d+)         -> captures one or more digits into a group
 	re := regexp.MustCompile(`retry after\s+(\d+)`)
 	matches := re.FindStringSubmatch(errStr)
-
-	// matches[0] is the full string ("retry after 160")
-	// matches[1] is the first captured group ("160")
-	if len(matches) >= 2 {
-		seconds, err := strconv.Atoi(matches[1])
-		if err != nil {
-			return 0
-		}
-		return seconds
+	if len(matches) != 2 {
+		return 0
 	}
-
-	return 0
+	seconds, err := strconv.Atoi(matches[1])
+	if err != nil {
+		return 0
+	}
+	return seconds
 }
