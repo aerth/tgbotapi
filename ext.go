@@ -2,8 +2,10 @@ package tgbotapi
 
 import (
 	"encoding/json"
+	"log/slog"
 	"regexp"
 	"strconv"
+	"sync/atomic"
 	"time"
 )
 
@@ -561,8 +563,7 @@ func ParseRetryAfter(err error) int {
 		return 0
 	}
 	errStr := err.Error()
-	re := regexp.MustCompile(`retry after\s+(\d+)`)
-	matches := re.FindStringSubmatch(errStr)
+	matches := retryRegex.FindStringSubmatch(errStr)
 	if len(matches) != 2 {
 		return 0
 	}
@@ -571,4 +572,28 @@ func ParseRetryAfter(err error) int {
 		return 0
 	}
 	return seconds
+}
+
+var gratelimit atomic.Pointer[time.Time]
+
+func BumpRateLimit(err error) {
+	if err == nil {
+		return
+	}
+	nsec := time.Duration(ParseRetryAfter(err))
+	gratelimit.Store(new(time.Now().Add(time.Second * nsec)))
+}
+
+// maybewait sleeps
+func maybewait() {
+	until := gratelimit.Load()
+	if until == nil {
+		return
+	}
+	if (*until).IsZero() {
+		return
+	}
+	d := time.Until(*until)
+	slog.Info("SLEEP RATE LIMIT", "d", d.String())
+	time.Sleep(d)
 }

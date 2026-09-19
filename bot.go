@@ -139,6 +139,7 @@ func (bot *BotAPI) MakeRequestJSON(endpoint string, val any) (*APIResponse, erro
 		return nil, Errorf("newreq %w", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
+	maybewait()
 	resp, err := bot.Client.Do(req)
 	if err != nil {
 		return nil, Errorf("http: %w", err)
@@ -173,6 +174,7 @@ func (bot *BotAPI) MakeRequestForm(endpoint string, values url.Values) (*APIResp
 	}
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
+	maybewait()
 	resp, err := bot.Client.Do(req)
 	if err != nil {
 		return nil, err
@@ -296,7 +298,7 @@ func (bot *BotAPI) UploadFiles(endpoint string, params Params, files []RequestFi
 	}
 
 	req.Header.Set("Content-Type", m.FormDataContentType())
-
+	maybewait()
 	resp, err := bot.Client.Do(req)
 	if err != nil {
 		return nil, err
