@@ -555,16 +555,12 @@ func (bot *BotAPI) GetBusinessConnection(businessConnectionID string) (BusinessC
 // 429 rate limit
 var retryRegex = regexp.MustCompile(`retry after\s+(\d+)`)
 
+// ParseRetryAfter does not sleep
 func ParseRetryAfter(err error) int {
 	if err == nil {
 		return 0
 	}
-
 	errStr := err.Error()
-
-	// Regex explanation:
-	// retry after\s+ -> matches the literal text followed by one or more spaces
-	// (\d+)         -> captures one or more digits into a group
 	re := regexp.MustCompile(`retry after\s+(\d+)`)
 	matches := re.FindStringSubmatch(errStr)
 	if len(matches) != 2 {
