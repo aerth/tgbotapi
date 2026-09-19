@@ -308,14 +308,12 @@ Wait:
 	if err != nil {
 		return nil, err
 	}
-	_ = defer resp.Body.Close()
-
 	var apiResp APIResponse
 	bytes, err := bot.decodeAPIResponse(resp.Body, &apiResp)
+	_ = resp.Body.Close()
 	if err != nil {
 		return &apiResp, err
 	}
-
 	if bot.Debug {
 		log.Printf("Endpoint: %s, response: %s\n", endpoint, string(bytes))
 	}
