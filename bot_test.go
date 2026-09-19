@@ -36,14 +36,13 @@ func (t testLogger) Printf(format string, v ...interface{}) {
 
 func getBot(t *testing.T) (*BotAPI, error) {
 	bot, err := NewBotAPI(TestToken)
+	if err != nil {
+		t.Fatal(err)
+	}
 	bot.Debug = true
 
 	logger := testLogger{t}
 	SetLogger(logger)
-
-	if err != nil {
-		t.Error(err)
-	}
 
 	return bot, err
 }
