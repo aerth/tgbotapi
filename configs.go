@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/url"
 	"os"
+	"slices"
 	"strconv"
 )
 
@@ -2707,10 +2708,11 @@ func prepareInputMediaForFiles(inputMedia []interface{}) []RequestFile {
 }
 
 type MessageEmojiReactionConfig struct {
-	ChatID    int64  `json:"chat_id"`
-	MessageID int    `json:"message_id"`
-	Emoji     string `json:"reaction"` // empty to delete, one of: "❤", "👍", "👎", "🔥", "🥰", "👏", "😁", "🤔", "🤯", "😱", "🤬", "😢", "🎉", "🤩", "🤮", "💩", "🙏", "👌", "🕊", "🤡", "🥱", "🥴", "😍", "🐳", "❤‍🔥", "🌚", "🌭", "💯", "🤣", "⚡", "🍌", "🏆", "💔", "🤨", "😐", "🍓", "🍾", "💋", "🖕", "😈", "😴", "😭", "🤓", "👻", "👨‍💻", "👀", "🎃", "🙈", "😇", "😨", "🤝", "✍", "🤗", "🫡", "🎅", "🎄", "☃", "💅", "🤪", "🗿", "🆒", "💘", "🙉", "🦄", "😘", "💊", "🙊", "😎", "👾", "🤷‍♂", "🤷", "🤷‍♀", "😡"
-	IsBig     bool   `json:"is_big"`   // big animation
+	ChatID               int64  `json:"chat_id"`
+	MessageID            int    `json:"message_id"`
+	Emoji                string `json:"reaction"` // empty to delete, one of: "❤", "👍", "👎", "🔥", "🥰", "👏", "😁", "🤔", "🤯", "😱", "🤬", "😢", "🎉", "🤩", "🤮", "💩", "🙏", "👌", "🕊", "🤡", "🥱", "🥴", "😍", "🐳", "❤‍🔥", "🌚", "🌭", "💯", "🤣", "⚡", "🍌", "🏆", "💔", "🤨", "😐", "🍓", "🍾", "💋", "🖕", "😈", "😴", "😭", "🤓", "👻", "👨‍💻", "👀", "🎃", "🙈", "😇", "😨", "🤝", "✍", "🤗", "🫡", "🎅", "🎄", "☃", "💅", "🤪", "🗿", "🆒", "💘", "🙉", "🦄", "😘", "💊", "🙊", "😎", "👾", "🤷‍♂", "🤷", "🤷‍♀", "😡"
+	IsBig                bool   `json:"is_big"`   // big animation
+	BusinessConnectionID string `json:"business_connection_id,omitempty"`
 }
 
 var ValidEmojiReactions = []string{
@@ -2752,11 +2754,15 @@ func (m MessageEmojiReactionConfig) method() string {
 
 // params implements [Chattable].
 func (m MessageEmojiReactionConfig) params() (Params, error) {
+	if m.Emoji != "" && !slices.Contains(ValidEmojiReactions, m.Emoji) {
+		return nil, Errorf("not a valid emoji: %q", m.Emoji)
+	}
 	if m.ChatID == 0 || m.MessageID == 0 {
-		return nil, fmt.Errorf("need ChatID and MessageID")
+		return nil, Errorf("need ChatID and MessageID")
 	}
 	params := make(Params)
 	params.AddNonZero64("chat_id", m.ChatID)
+	params.AddNonEmpty("business_connection_id", m.BusinessConnectionID)
 	params.AddNonZero("message_id", m.MessageID)
 	params.AddBool("is_big", m.IsBig)
 	if err := params.AddAny("reaction", []map[string]string{
@@ -2765,7 +2771,7 @@ func (m MessageEmojiReactionConfig) params() (Params, error) {
 			"emoji": m.Emoji,
 		},
 	}); err != nil {
-		return params, fmt.Errorf("%w", err)
+		return params, Errorf("%w", err)
 	}
 	return params, nil
 }
