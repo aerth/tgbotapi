@@ -9,6 +9,7 @@ import (
 	"os"
 	"slices"
 	"strconv"
+	"strings"
 )
 
 // Telegram constants
@@ -358,9 +359,9 @@ type MessageConfig struct {
 
 	MessageThreadId       *int64 `json:"message_thread_id,omitempty"`
 	DirectMessagesTopicId *int64 `json:"direct_messages_topic_id,omitempty"`
-	DisableNotification   *bool  `json:"disable_notification,omitempty"`
-	ProtectContent        *bool  `json:"protect_content,omitempty"`
-	AllowPaidBroadcast    *bool  `json:"allow_paid_broadcast,omitempty"`
+	DisableNotification   bool   `json:"disable_notification,omitempty"`
+	ProtectContent        bool   `json:"protect_content,omitempty"`
+	AllowPaidBroadcast    bool   `json:"allow_paid_broadcast,omitempty"`
 	MessageEffectId       string `json:"message_effect_id,omitempty"`
 	BusinessConnectionID  string `json:"business_connection_id,omitempty"`
 
@@ -396,9 +397,7 @@ func (config MessageConfig) params() (Params, error) {
 	}
 
 	params.AddNonEmpty("text", config.Text)
-
-	params.AddNonEmpty("text", config.Text)
-	if err := params.AddFirstValid("chat_id", config.BaseChat.ChatID, config.BaseChat.ChannelUsername); err != nil {
+	if err := params.AddFirstValid("chat_id", config.ChatID, config.ChannelUsername); err != nil {
 		return nil, err
 	}
 
@@ -411,16 +410,16 @@ func (config MessageConfig) params() (Params, error) {
 	}
 
 	// 3. Content Protection & Notifications
-	if config.DisableNotification != nil {
-		params.AddBool("disable_notification", *config.DisableNotification)
+	if config.DisableNotification {
+		params.AddBool("disable_notification", config.DisableNotification)
 	}
-	if config.ProtectContent != nil {
-		params.AddBool("protect_content", *config.ProtectContent)
+	if config.ProtectContent {
+		params.AddBool("protect_content", config.ProtectContent)
 	}
 
 	// 4. Advanced/Special Features
-	if config.AllowPaidBroadcast != nil {
-		params.AddBool("allow_paid_broadcast", *config.AllowPaidBroadcast)
+	if config.AllowPaidBroadcast {
+		params.AddBool("allow_paid_broadcast", config.AllowPaidBroadcast)
 	}
 	if config.MessageEffectId != "" { // Go way to check empty string
 		params.AddNonEmpty("message_effect_id", config.MessageEffectId)
@@ -447,48 +446,6 @@ func (config MessageConfig) params() (Params, error) {
 
 	params.AddBool("disable_web_page_preview", config.DisableWebPagePreview)
 
-	// 2. Thread/Topic Management
-	if config.MessageThreadId != nil {
-		params.AddNonZero64("message_thread_id", *config.MessageThreadId)
-	}
-	if config.DirectMessagesTopicId != nil {
-		params.AddNonZero64("direct_messages_topic_id", *config.DirectMessagesTopicId)
-	}
-
-	// 3. Content Protection & Notifications
-	if config.DisableNotification != nil {
-		params.AddBool("disable_notification", *config.DisableNotification)
-	}
-	if config.ProtectContent != nil {
-		params.AddBool("protect_content", *config.ProtectContent)
-	}
-
-	// 4. Advanced/Special Features
-	if config.AllowPaidBroadcast != nil {
-		params.AddBool("allow_paid_broadcast", *config.AllowPaidBroadcast)
-	}
-	params.AddNonEmpty("message_effect_id", config.MessageEffectId)
-
-	// 5. Link Previews (The modern way to handle previews)
-	if config.LinkPreviewOptions != nil {
-		err := params.AddInterface("link_preview_options", config.LinkPreviewOptions)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	// 6. Replying & Keyboards
-	if config.ReplyParameters != nil {
-		err := params.AddInterface("reply_parameters", config.ReplyParameters)
-		if err != nil {
-			return nil, err
-		}
-	}
-	if config.ReplyMarkup != nil {
-		params.AddInterface("reply_markup", config.ReplyMarkup)
-	}
-
-	params.AddBool("disable_web_page_preview", config.DisableWebPagePreview)
 	params.AddNonEmpty("parse_mode", config.ParseMode)
 	err = params.AddInterface("entities", config.Entities)
 
@@ -2772,6 +2729,7 @@ func (m MessageEmojiReactionConfig) method() string {
 
 // params implements [Chattable].
 func (m MessageEmojiReactionConfig) params() (Params, error) {
+	m.Emoji = strings.ReplaceAll(m.Emoji, "\U0001F44D\uFE0F", "👍")
 	if m.Emoji != "" && !slices.Contains(ValidEmojiReactions, m.Emoji) {
 		return nil, Errorf("not a valid emoji: %q", m.Emoji)
 	}
