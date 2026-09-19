@@ -144,7 +144,7 @@ func (bot *BotAPI) MakeRequestJSON(endpoint string, val any) (*APIResponse, erro
 	maybewait()
 	resp, err := bot.Client.Do(req)
 	if err != nil {
-		ParseRetryAfter(err)
+		BumpRateLimit(err)
 		return nil, Errorf("http: %w", err)
 	}
 	defer func() { _ = resp.Body.Close() }()
