@@ -313,15 +313,15 @@ type BaseEdit struct {
 	RichMessage          *InputRichMessage
 }
 type InputRichMessage struct {
-	Blocks              []json.RawMessage `json:"blocks,omitempty"`
-	HTML                string            `json:"html,omitempty"`
-	Markdown            string            `json:"markdown,omitempty"`
-	Media               []InputRichMedia  `json:"media,omitempty"` // Optional. List of media that are specified in the markdown or html fields using tg://photo?id=, tg://video?id=, tg://document?id=, and tg://audio?id= links
-	IsRTL               bool              `json:"is_rtl,omitempty"`
-	SkipEntityDetection bool              `json:"skip_entity_detection,omitempty"`
+	Blocks              []any            `json:"blocks,omitempty"`
+	HTML                string           `json:"html,omitempty"`
+	Markdown            string           `json:"markdown,omitempty"`
+	Media               []InputRichMedia `json:"media,omitempty"` // Optional. List of media that are specified in the markdown or html fields using tg://photo?id=, tg://video?id=, tg://document?id=, and tg://audio?id= links
+	IsRTL               bool             `json:"is_rtl,omitempty"`
+	SkipEntityDetection bool             `json:"skip_entity_detection,omitempty"`
 }
 type (
-	InputRichBlock struct{}
+	InputRichBlock json.RawMessage
 	InputRichMedia struct {
 		ID    string `json:"id"`              // Unique identifier of the media used in a tg://photo?id=, tg://video?id=, tg://document?id=, or tg://audio?id= link. 1-64 characters, only A-Z, a-z, 0-9, _ and - are allowed.
 		Media any    `json:"media,omitempty"` // InputMediaAnimation or InputMediaAudio or InputMediaDocument or InputMediaPhoto or InputMediaVideo or InputMediaVoiceNote
