@@ -316,6 +316,7 @@ type InputRichMessage struct {
 	Blocks []json.RawMessage `json:"blocks,omitempty"`
 	HTML string `json:"html,omitempty"`
 	Markdown string `json:"markdown,omitempty"`
+	Media []InputRichMedia `json:"media,omitempty"` //Optional. List of media that are specified in the markdown or html fields using tg://photo?id=, tg://video?id=, tg://document?id=, and tg://audio?id= links
 
 func (edit BaseEdit) params() (Params, error) {
 	params := make(Params)
