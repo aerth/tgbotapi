@@ -325,10 +325,12 @@ func (bot *BotAPI) UploadFiles(endpoint string, params Params, files []RequestFi
 			parameters = *apiResp.Parameters
 		}
 
-		return &apiResp, Errorf("%w", &Error{
+		err = Errorf("%w", &Error{
 			Message:            apiResp.Description,
 			ResponseParameters: parameters,
 		})
+		BumpRateLimit(err)
+		return &apiResp, err
 	}
 
 	return &apiResp, nil
