@@ -2,6 +2,7 @@ package tgbotapi
 
 import (
 	"encoding/json"
+	"regexp"
 	"time"
 )
 
@@ -549,3 +550,6 @@ func (bot *BotAPI) GetBusinessConnection(businessConnectionID string) (BusinessC
 	}
 	return conn, nil
 }
+
+// 429 rate limit
+var retryRegex = regexp.MustCompile(`retry after\s+(\d+)`)
