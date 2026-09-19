@@ -323,7 +323,8 @@ type InputRichMessage struct {
 type (
 	InputRichBlock struct{}
 	InputRichMedia struct {
-		ID string `json:"id"`
+		ID    string `json:"id"`
+		Media any    `json:"media,omitempty"`
 	}
 )
 
