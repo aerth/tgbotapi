@@ -301,12 +301,14 @@ func (bot *BotAPI) UploadFiles(endpoint string, params Params, files []RequestFi
 	}
 
 	req.Header.Set("Content-Type", m.FormDataContentType())
+
+Wait:
 	maybewait()
 	resp, err := bot.Client.Do(req)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	_ = defer resp.Body.Close()
 
 	var apiResp APIResponse
 	bytes, err := bot.decodeAPIResponse(resp.Body, &apiResp)
@@ -329,7 +331,9 @@ func (bot *BotAPI) UploadFiles(endpoint string, params Params, files []RequestFi
 			Message:            apiResp.Description,
 			ResponseParameters: parameters,
 		})
-		BumpRateLimit(err)
+		if BumpRateLimit(err) {
+			goto Wait
+		}
 		return &apiResp, err
 	}
 
