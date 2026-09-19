@@ -309,6 +309,7 @@ type BaseEdit struct {
 	InlineMessageID      string
 	ReplyMarkup          *InlineKeyboardMarkup
 	BusinessConnectionID string
+	RichMessage          *InputRichMessage
 }
 
 func (edit BaseEdit) params() (Params, error) {
