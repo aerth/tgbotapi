@@ -320,6 +320,7 @@ func (edit BaseEdit) params() (Params, error) {
 		params.AddFirstValid("chat_id", edit.ChatID, edit.ChannelUsername)
 		params.AddNonZero("message_id", edit.MessageID)
 	}
+	params.AddNonEmpty("business_connection_id", edit.BusinessConnectionID)
 
 	err := params.AddInterface("reply_markup", edit.ReplyMarkup)
 
