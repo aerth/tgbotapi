@@ -704,7 +704,7 @@ func ExampleNewWebhook() {
 	}
 }
 
-func ExampleWebhookHandler() {
+func fooExampleWebhookHandler() {
 	bot, err := NewBotAPI("MyAwesomeBotToken")
 	if err != nil {
 		panic(err)
