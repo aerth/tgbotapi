@@ -303,11 +303,12 @@ func (file BaseFile) params() (Params, error) {
 
 // BaseEdit is base type of all chat edits.
 type BaseEdit struct {
-	ChatID          int64
-	ChannelUsername string
-	MessageID       int
-	InlineMessageID string
-	ReplyMarkup     *InlineKeyboardMarkup
+	ChatID               int64
+	ChannelUsername      string
+	MessageID            int
+	InlineMessageID      string
+	ReplyMarkup          *InlineKeyboardMarkup
+	BusinessConnectionID string
 }
 
 func (edit BaseEdit) params() (Params, error) {
