@@ -323,8 +323,8 @@ type InputRichMessage struct {
 type (
 	InputRichBlock struct{}
 	InputRichMedia struct {
-		ID    string `json:"id"`
-		Media any    `json:"media,omitempty"`
+		ID    string `json:"id"`              // Unique identifier of the media used in a tg://photo?id=, tg://video?id=, tg://document?id=, or tg://audio?id= link. 1-64 characters, only A-Z, a-z, 0-9, _ and - are allowed.
+		Media any    `json:"media,omitempty"` // InputMediaAnimation or InputMediaAudio or InputMediaDocument or InputMediaPhoto or InputMediaVideo or InputMediaVoiceNote
 	}
 )
 
