@@ -596,6 +596,9 @@ func maybewait() {
 		return
 	}
 	d := time.Until(*until)
+	if d <= 0 {
+		return
+	}
 	slog.Info("SLEEP RATE LIMIT", "d", d.String())
 	time.Sleep(d)
 }
