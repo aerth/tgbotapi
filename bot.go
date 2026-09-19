@@ -550,8 +550,8 @@ func (bot *BotAPI) StopReceivingUpdates() {
 	close(bot.shutdownChannel)
 }
 
-func (bot *BotAPI) WebhookHandler() WebhookHandler {
-	return WebhookHandler{BotAPI: bot}
+func (bot *BotAPI) WebhookHandler() *WebhookHandler {
+	return &WebhookHandler{BotAPI: bot}
 }
 
 type WebhookHandler struct {
