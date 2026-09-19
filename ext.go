@@ -605,3 +605,14 @@ func maybewait() {
 	slog.Info("SLEEP RATE LIMIT", "d", d.String())
 	time.Sleep(d)
 }
+
+const (
+	MAX_CAPTION_LENGTH                = 1024
+	MAX_FILESIZE_DOWNLOAD             = 20000000
+	MAX_FILESIZE_UPLOAD               = 50000000
+	MAX_MESSAGES_PER_MINUTE_PER_GROUP = 20
+	MAX_MESSAGES_PER_SECOND           = 30
+	MAX_MESSAGES_PER_SECOND_PER_CHAT  = 1
+	MAX_MESSAGE_LENGTH                = 4096
+	MAX_MESSAGE_LENGTH_IN_GRAPH       = 65536
+)
