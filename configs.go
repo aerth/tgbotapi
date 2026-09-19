@@ -315,6 +315,7 @@ type BaseEdit struct {
 type InputRichMessage struct {
 	Blocks []json.RawMessage `json:"blocks,omitempty"`
 	HTML string `json:"html,omitempty"`
+	Markdown string `json:"markdown,omitempty"`
 
 func (edit BaseEdit) params() (Params, error) {
 	params := make(Params)
