@@ -136,7 +136,7 @@ func (bot *BotAPI) MakeRequestJSON(endpoint string, val any) (*APIResponse, erro
 		}
 	}
 	method := fmt.Sprintf(bot.apiEndpoint, bot.Token, endpoint)
-	req, err := http.NewRequest("POST", method, bytes.NewReader(js))
+	req, err := http.NewRequest(http.MethodPost, method, bytes.NewReader(js))
 	if err != nil {
 		return nil, Errorf("newreq %w", err)
 	}
@@ -170,7 +170,7 @@ func (bot *BotAPI) MakeRequestForm(endpoint string, values url.Values) (*APIResp
 		Slog().Debug("telegram request", "endpoint", endpoint, "params", values.Encode())
 	}
 	method := fmt.Sprintf(bot.apiEndpoint, bot.Token, endpoint)
-	req, err := http.NewRequest("POST", method, strings.NewReader(values.Encode()))
+	req, err := http.NewRequest(http.MethodPost, method, strings.NewReader(values.Encode()))
 	if err != nil {
 		return &APIResponse{}, err
 	}
@@ -294,7 +294,7 @@ func (bot *BotAPI) UploadFiles(endpoint string, params Params, files []RequestFi
 
 	method := fmt.Sprintf(bot.apiEndpoint, bot.Token, endpoint)
 
-	req, err := http.NewRequest("POST", method, r)
+	req, err := http.NewRequest(http.MethodPost, method, r)
 	if err != nil {
 		return nil, err
 	}
