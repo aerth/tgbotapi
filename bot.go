@@ -551,11 +551,15 @@ func (bot *BotAPI) StopReceivingUpdates() {
 }
 
 func (bot *BotAPI) WebhookHandler() WebhookHandler {
-	return WebhookHandler{bot: bot}
+	return WebhookHandler{BotAPI: bot}
+}
+
+type WebhookHandler struct {
+	*BotAPI
 }
 
 // ListenForWebhook registers a http handler for a webhook.
-func (bot *BotAPI) ListenForWebhook(mux *http.ServeMux, pattern string) UpdatesChannel {
+func (bot *WebhookHandler) ListenForWebhook(mux *http.ServeMux, pattern string) UpdatesChannel {
 	ch := make(chan Update, bot.Buffer)
 
 	mux.HandleFunc(pattern, func(w http.ResponseWriter, r *http.Request) {
