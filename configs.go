@@ -312,7 +312,8 @@ type BaseEdit struct {
 	BusinessConnectionID string
 	RichMessage          *InputRichMessage
 }
-type InputRichMessage json.RawMessage
+type InputRichMessage struct {
+	Blocks []json.RawMessage `json:"blocks,omitempty"`
 
 func (edit BaseEdit) params() (Params, error) {
 	params := make(Params)
