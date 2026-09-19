@@ -2728,6 +2728,21 @@ var ValidEmojiReactions = []string{
 	"🤷‍♂", "🤷", "🤷‍♀", "😡",
 }
 
+var ValidEmojiNames = []string{
+	"heart", "thumbsup", "thumbsdown", "fire", "smilingfacehearteyes", "clappinghands",
+	"grinningface", "thinking", "explodinghead", "scream", "facewithsymbolsonmouth", "cry",
+	"partypopper", "starstruck", "facevomiting", "poop", "prayer", "okhand",
+	"dove", "clownface", "yawning", "woozy", "hearteyes", "whale",
+	"heartonfire", "newmoon", "hotdog", "hundred", "rollingonthefloor", "lightning",
+	"banana", "trophy", "brokenheart", "raisedeyebrow", "neutralface", "strawberry",
+	"champagne", "kissmark", "middlefinger", "smilingfacewithhorns", "sleeping", "loudlycryingface",
+	"nerd", "ghost", "technologist", "eyes", "jack-o-lantern", "see-no-ear",
+	"smilingfacewithhalo", "fearful", "handshake", "writing", "hugging", "saluting", "santa",
+	"christmas_tree", "snowman", "nail_polish", "zany", "moai", "cool", "heart_with_arrow",
+	"monkey_see_monkey_hear", "unicorn", "kissing", "pill", "speak_no_monkey", "smilingfacewithsunglasses", "alien_monster",
+	"man_shrug", "shrug", "woman_shrug", "pouting",
+}
+
 const PaidEmoji = "paid" // star emoji
 
 // method implements [Chattable].
