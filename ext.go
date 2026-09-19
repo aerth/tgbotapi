@@ -576,14 +576,16 @@ func ParseRetryAfter(err error) int {
 
 var gratelimit atomic.Pointer[time.Time]
 
-func BumpRateLimit(err error) {
+func BumpRateLimit(err error) bool {
 	if err == nil {
-		return
+		return false
 	}
 	nsec := time.Duration(ParseRetryAfter(err))
 	if nsec != 0 {
 		gratelimit.Store(new(time.Now().Add(time.Second * nsec)))
+		return true
 	}
+	return false
 }
 
 // maybewait sleeps
