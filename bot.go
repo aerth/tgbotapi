@@ -325,10 +325,10 @@ func (bot *BotAPI) UploadFiles(endpoint string, params Params, files []RequestFi
 			parameters = *apiResp.Parameters
 		}
 
-		return &apiResp, &Error{
+		return &apiResp, Errorf("%w", &Error{
 			Message:            apiResp.Description,
 			ResponseParameters: parameters,
-		}
+		})
 	}
 
 	return &apiResp, nil
