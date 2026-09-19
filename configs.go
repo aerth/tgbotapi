@@ -322,7 +322,9 @@ type InputRichMessage struct {
 }
 type (
 	InputRichBlock struct{}
-	InputRichMedia struct{}
+	InputRichMedia struct {
+		ID string `json:"id"`
+	}
 )
 
 func (edit BaseEdit) params() (Params, error) {
