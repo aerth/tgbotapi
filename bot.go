@@ -173,7 +173,7 @@ func (bot *BotAPI) MakeRequestForm(endpoint string, values url.Values) (*APIResp
 	method := fmt.Sprintf(bot.apiEndpoint, bot.Token, endpoint)
 	req, err := http.NewRequest(http.MethodPost, method, strings.NewReader(values.Encode()))
 	if err != nil {
-		return &APIResponse{}, err
+		return &APIResponse{}, Errorf("%w", err)
 	}
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
@@ -187,7 +187,7 @@ func (bot *BotAPI) MakeRequestForm(endpoint string, values url.Values) (*APIResp
 	var apiResp APIResponse
 	bytes, err := bot.decodeAPIResponse(resp.Body, &apiResp)
 	if err != nil {
-		return &apiResp, err
+		return &apiResp, Errorf("%w", err)
 	}
 
 	if bot.Debug {
