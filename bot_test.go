@@ -732,7 +732,7 @@ func fooExampleWebhookHandler() {
 	}
 
 	http.HandleFunc("/"+bot.Token, func(w http.ResponseWriter, r *http.Request) {
-		update, err := bot.HandleUpdate(r)
+		update, err := bot.WebhookHandler().HandleUpdate(r)
 		if err != nil {
 			log.Printf("%+v\n", err.Error())
 		} else {
