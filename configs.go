@@ -321,7 +321,6 @@ func (edit BaseEdit) params() (Params, error) {
 		params.AddNonZero("message_id", edit.MessageID)
 	}
 	params.AddNonEmpty("business_connection_id", edit.BusinessConnectionID)
-
 	err := params.AddInterface("reply_markup", edit.ReplyMarkup)
 
 	return params, err
