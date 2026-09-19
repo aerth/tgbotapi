@@ -582,6 +582,7 @@ func BumpRateLimit(err error) bool {
 	}
 	nsec := time.Duration(ParseRetryAfter(err))
 	if nsec != 0 {
+		nsec += 1
 		gratelimit.Store(new(time.Now().Add(time.Second * nsec)))
 		return true
 	}
