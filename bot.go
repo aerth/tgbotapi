@@ -579,7 +579,7 @@ func (bot *WebhookHandler) ListenForWebhook(mux *http.ServeMux, pattern string) 
 }
 
 // ListenForWebhookRespReqFormat registers a http handler for a single incoming webhook.
-func (bot *BotAPI) ListenForWebhookRespReqFormat(w http.ResponseWriter, r *http.Request) UpdatesChannel {
+func (bot *WebhookHandler) ListenForWebhookRespReqFormat(w http.ResponseWriter, r *http.Request) UpdatesChannel {
 	ch := make(chan Update, bot.Buffer)
 
 	func(w http.ResponseWriter, r *http.Request) {
@@ -601,7 +601,7 @@ func (bot *BotAPI) ListenForWebhookRespReqFormat(w http.ResponseWriter, r *http.
 }
 
 // HandleUpdate parses and returns update received via webhook
-func (bot *BotAPI) HandleUpdate(r *http.Request) (*Update, error) {
+func (bot *WebhookHandler) HandleUpdate(r *http.Request) (*Update, error) {
 	if r.Method != http.MethodPost {
 		err := errors.New("wrong HTTP method required POST")
 		return nil, err
