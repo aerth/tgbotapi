@@ -2,6 +2,7 @@ package tgbotapi
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/url"
@@ -311,6 +312,7 @@ type BaseEdit struct {
 	BusinessConnectionID string
 	RichMessage          *InputRichMessage
 }
+type InputRichMessage json.RawMessage
 
 func (edit BaseEdit) params() (Params, error) {
 	params := make(Params)
