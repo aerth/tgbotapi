@@ -696,7 +696,7 @@ func ExampleNewWebhook() {
 		log.Printf("failed to set webhook: %s", info.LastErrorMessage)
 	}
 
-	updates := bot.ListenForWebhook(http.DefaultServeMux, "/"+bot.Token)
+	updates := bot.WebhookHandler().ListenForWebhook(http.DefaultServeMux, "/"+bot.Token)
 	go http.ListenAndServeTLS("0.0.0.0:8443", "cert.pem", "key.pem", nil)
 
 	for update := range updates {
