@@ -616,3 +616,21 @@ const (
 	MAX_MESSAGE_LENGTH                = 4096
 	MAX_MESSAGE_LENGTH_IN_GRAPH       = 65536
 )
+
+// InlineKeyboard creates an InlineKeyboardMarkup from rows of [Text, CallbackData] pairs.
+//
+//	msg.ReplyMarkup = tgbotapi.InlineKeyboard(
+//	[]string{"Option 1", "Option 2"}, // Row 1
+//	[]string{"Option 3"},             // Row 2
+//	[]string{"Cancel"},               // Row 3
+//	)
+func InlineKeyboard(rows ...[][2]string) InlineKeyboardMarkup {
+	grid := make([][]InlineKeyboardButton, len(rows))
+	for i, row := range rows {
+		grid[i] = make([]InlineKeyboardButton, len(row))
+		for j, btn := range row {
+			grid[i][j] = NewInlineKeyboardButtonData(btn[0], btn[1])
+		}
+	}
+	return NewInlineKeyboardMarkup(grid...)
+}
