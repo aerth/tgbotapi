@@ -89,7 +89,6 @@ var HandleLaunchBG = func(ctx context.Context, b *BotAPI, u Update, h Handler) f
 	}()
 	return nil
 }
-var HandleLaunch = HandleLaunchBG
 
 var HandleLaunchFG = func(ctx context.Context, b *BotAPI, u Update, h Handler) func() error {
 	return func() error {
@@ -100,6 +99,8 @@ var HandleLaunchFG = func(ctx context.Context, b *BotAPI, u Update, h Handler) f
 		return err
 	}
 }
+
+var HandleLaunch = HandleLaunchFG
 
 // CommandPaths returns all the known commands
 func CommandPaths(mux *Mux) []string {
