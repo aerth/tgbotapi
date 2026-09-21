@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log/slog"
 	"maps"
+	"runtime/debug"
 	"slices"
 )
 
@@ -134,14 +135,16 @@ func NewMux() *Mux {
 }
 
 // HandleFunc like [http.ServeMux.HandleFunc]
+//
+// DO NOT include slash prefix in path.
+// See [DefaultRoutePath] [DefaultMessagePath] and [DefaultRouteCommandPath] for special paths.
 func (m *Mux) HandleFunc(path string, h func(ctx context.Context, b *BotAPI, u Update) error) {
 	m.Handle(path, HandlerFunc(h))
 }
 
-// HandleFunc like [http.ServeMux.HandleFunc] but for slash commands
+// Handle like [http.ServeMux.Handle] but for slash commands
 //
 // DO NOT include slash prefix in path.
-//
 // See [DefaultRoutePath] [DefaultMessagePath] and [DefaultRouteCommandPath] for special paths.
 func (m *Mux) Handle(path string, h Handler) {
 	if _, ok := m.routes[path]; ok {
@@ -207,6 +210,15 @@ func (mx *Mux) handle(ctx context.Context, b *BotAPI, u Update, h Handler, path 
 	if launcher == nil { // bg
 		return nil
 	}
+	defer func() {
+		if r := recover(); r != nil {
+			stack := debug.Stack()
+			slog.Error("recovered from panic in TG mux.Handler",
+				slog.Any("panic_error", r),
+				slog.String("panic_stack", string(stack)),
+			)
+		}
+	}()
 	if err := launcher(); err != nil {
 		ErrorLogger(ctx, b, u, h, err)
 		if errors.Is(err, ErrBreak) {
