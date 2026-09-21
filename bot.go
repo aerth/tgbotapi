@@ -494,7 +494,14 @@ func (bot *BotAPI) GetUpdates(config UpdateConfig) ([]Update, error) {
 	}
 
 	var updates []Update
-	err = json.Unmarshal(resp.Result, &updates)
+	var rawupdates []json.RawMessage
+	err = json.Unmarshal(resp.Result, &rawupdates)
+	if err == nil {
+		err = json.Unmarshal(resp.Result, &updates)
+	}
+	for i := range updates {
+		updates[i].cached = rawupdates[i]
+	}
 
 	return updates, err
 }
