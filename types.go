@@ -31,8 +31,14 @@ func (e Error) Error() string {
 	return e.Message
 }
 
+func (u Update) Raw() json.RawMessage {
+	return u.cached
+}
+
 // Update is an update response, from GetUpdates.
 type Update struct {
+	cached json.RawMessage // from decode
+
 	// UpdateID is the update's unique identifier.
 	// Update identifiers start from a certain positive number and increase
 	// sequentially.
