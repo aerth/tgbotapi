@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"regexp"
 	"strconv"
+	"strings"
 	"sync/atomic"
 	"time"
 )
@@ -633,4 +634,37 @@ func InlineKeyboard(rows ...[][2]string) InlineKeyboardMarkup {
 		}
 	}
 	return NewInlineKeyboardMarkup(grid...)
+}
+
+// UserPersonalChatMessages contains information about a
+// GetUserPersonalChat request.
+type UserPersonalChatMessages struct {
+	UserID int64
+	Limit  int
+}
+
+func (UserPersonalChatMessages) method() string {
+	return "getUserPersonalChatMessages"
+}
+
+func (config UserPersonalChatMessages) params() (Params, error) {
+	params := make(Params)
+	params.AddNonZero64("user_id", config.UserID)
+	params.AddNonZero("limit", config.Limit)
+
+	return params, nil
+}
+
+func (bot *BotAPI) GetUserPersonalChat(config UserPersonalChatMessages) ([]Message, error) {
+	resp, err := bot.Request(config)
+	if err != nil {
+		if strings.Contains(err.Error(), "USER_PERSONAL_CHANNEL_MISSING") {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	var msgs []Message
+	err = json.Unmarshal(resp.Result, &msgs)
+	return msgs, err
 }
