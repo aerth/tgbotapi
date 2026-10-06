@@ -313,6 +313,15 @@ func (bot *BotAPI) ReplyToM2(replyTo Message, textV2 string) (Message, error) {
 }
 
 func (bot *BotAPI) DeleteMessage(msg Message) error {
+	if msg.Chat == nil || msg.Chat.ID == 0 {
+		return Errorf("missing Chat.ID")
+	}
+	if msg.MessageID == 0 {
+		return Errorf("missing MessageID")
+	}
+	if _, err := bot.Request(NewDeleteMessage(msg.Chat.ID, msg.MessageID)); err != nil {
+		return Errorf("%w", err)
+	}
 	return nil
 }
 
