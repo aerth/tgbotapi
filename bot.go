@@ -35,18 +35,6 @@ type BotAPI struct {
 	isShutdown  atomic.Bool
 }
 
-func (bot *BotAPI) SendTextM1(chatID int64, format string, a ...any) (Message, error) {
-	txt := NewMessage(chatID, fmt.Sprintf(format, a...))
-	txt.ParseMode = ModeMarkdown
-	return bot.Send(txt)
-}
-
-func (bot *BotAPI) SendTextM2(chatID int64, format string, a ...any) (Message, error) {
-	txt := NewMessage(chatID, fmt.Sprintf(format, a...))
-	txt.ParseMode = ModeMarkdownV2
-	return bot.Send(txt)
-}
-
 // NewBotAPI creates a new BotAPI instance.
 //
 // It requires a token, provided by @BotFather on Telegram.

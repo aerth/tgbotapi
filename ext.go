@@ -1,7 +1,9 @@
 package tgbotapi
 
 import (
+	"context"
 	"encoding/json"
+	"fmt"
 	"log/slog"
 	"regexp"
 	"strconv"
@@ -668,3 +670,54 @@ func (bot *BotAPI) GetUserPersonalChat(config UserPersonalChatMessages) ([]Messa
 	err = json.Unmarshal(resp.Result, &msgs)
 	return msgs, err
 }
+
+func (bot *BotAPI) SendTextM1(chatID int64, format string, a ...any) (Message, error) {
+	txt := NewMessage(chatID, fmt.Sprintf(format, a...))
+	txt.ParseMode = ModeMarkdown
+	return bot.Send(txt)
+}
+
+func (bot *BotAPI) SendTextM2(chatID int64, format string, a ...any) (Message, error) {
+	txt := NewMessage(chatID, fmt.Sprintf(format, a...))
+	txt.ParseMode = ModeMarkdownV2
+	return bot.Send(txt)
+}
+
+func (bot *BotAPI) ReplyToM1(replyTo Message, textV1 string) (Message, error) {
+	msg := NewMessage(replyTo.Chat.ID, textV1)
+	msg.ParseMode = ModeMarkdown
+	msg.ReplyToMessageID = replyTo.MessageID
+	sent, err := bot.Send(msg)
+	if err != nil {
+		return sent, err
+	}
+	return sent, nil
+}
+
+func (bot *BotAPI) ReplyToM2(replyTo Message, textV2 string) (Message, error) {
+	msg := NewMessage(replyTo.Chat.ID, textV2)
+	msg.ParseMode = ModeMarkdownV2
+	msg.ReplyToMessageID = replyTo.MessageID
+	sent, err := bot.Send(msg)
+	if err != nil {
+		return sent, err
+	}
+	return sent, nil
+}
+
+func (bot *BotAPI) DeleteMessage(msg Message) error {
+	if msg.Chat == nil || msg.Chat.ID == 0 {
+		return Errorf("missing Chat.ID")
+	}
+	if msg.MessageID == 0 {
+		return Errorf("missing MessageID")
+	}
+	if _, err := bot.Request(NewDeleteMessage(msg.Chat.ID, msg.MessageID)); err != nil {
+		return Errorf("%w", err)
+	}
+	return nil
+}
+
+func noopHandler(ctx context.Context, b *BotAPI, u Update) error { return nil }
+
+var _ Handler = HandlerFunc(noopHandler)
