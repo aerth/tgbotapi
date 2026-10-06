@@ -657,18 +657,36 @@ func (config UserPersonalChatMessages) params() (Params, error) {
 	return params, nil
 }
 
-func (bot *BotAPI) GetUserPersonalChat(config UserPersonalChatMessages) ([]Message, error) {
+// GetUserPersonalChat lists the latest (20) messages in the users bio channel, or nil if the user has no bio channel
+func (bot *BotAPI) GetUserPersonalChat(userID int64, limitMessages int) ([]Message, error) {
+	config := UserPersonalChatMessages{
+		UserID: userID,
+		Limit:  limitMessages,
+	}
 	resp, err := bot.Request(config)
+	if err != nil && strings.Contains(err.Error(), "USER_PERSONAL_CHANNEL_MISSING") {
+		return nil, nil
+	}
 	if err != nil {
-		if strings.Contains(err.Error(), "USER_PERSONAL_CHANNEL_MISSING") {
-			return nil, nil
-		}
 		return nil, err
 	}
-
 	var msgs []Message
 	err = json.Unmarshal(resp.Result, &msgs)
 	return msgs, err
+}
+
+func (bot *BotAPI) SendDraftM1(chatID int64, draftID int, format string, a ...any) (Message, error) {
+	txt := NewMessage(chatID, fmt.Sprintf(format, a...))
+	txt.DraftID = draftID
+	txt.ParseMode = ModeMarkdown
+	return bot.Send(txt)
+}
+
+func (bot *BotAPI) SendDraftM2(chatID int64, draftID int, format string, a ...any) (Message, error) {
+	txt := NewMessage(chatID, fmt.Sprintf(format, a...))
+	txt.DraftID = draftID
+	txt.ParseMode = ModeMarkdownV2
+	return bot.Send(txt)
 }
 
 func (bot *BotAPI) SendTextM1(chatID int64, format string, a ...any) (Message, error) {
@@ -687,22 +705,14 @@ func (bot *BotAPI) ReplyToM1(replyTo Message, textV1 string) (Message, error) {
 	msg := NewMessage(replyTo.Chat.ID, textV1)
 	msg.ParseMode = ModeMarkdown
 	msg.ReplyToMessageID = replyTo.MessageID
-	sent, err := bot.Send(msg)
-	if err != nil {
-		return sent, err
-	}
-	return sent, nil
+	return bot.Send(msg)
 }
 
 func (bot *BotAPI) ReplyToM2(replyTo Message, textV2 string) (Message, error) {
 	msg := NewMessage(replyTo.Chat.ID, textV2)
 	msg.ParseMode = ModeMarkdownV2
 	msg.ReplyToMessageID = replyTo.MessageID
-	sent, err := bot.Send(msg)
-	if err != nil {
-		return sent, err
-	}
-	return sent, nil
+	return bot.Send(msg)
 }
 
 func (bot *BotAPI) DeleteMessage(msg Message) error {
