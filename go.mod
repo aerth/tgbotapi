@@ -1,3 +1,3 @@
-module github.com/aerth/telegram-bot-api
+module github.com/aerth/tgbotapi
 
 go 1.27
