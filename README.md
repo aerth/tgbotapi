@@ -1,29 +1,14 @@
 # Golang bindings for the Telegram Bot API
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/aerth/tgbotapi.svg)](https://pkg.go.dev/github.com/aerth/tgbotapi)
-[![Test](https://github.com/go-telegram-bot-api/telegram-bot-api/actions/workflows/test.yml/badge.svg)](https://github.com/go-telegram-bot-api/telegram-bot-api/actions/workflows/test.yml)
-
-All methods are fairly self-explanatory, and reading the [godoc](https://pkg.go.dev/github.com/aerth/tgbotapi) page should
-explain everything. If something isn't clear, open an issue or submit
-a pull request.
-
-There are more tutorials and high-level information on the website, [go-telegram-bot-api.dev](https://go-telegram-bot-api.dev).
-
-The scope of this project is just to provide a wrapper around the API
-without any additional features. There are other projects for creating
-something with plugins and command handlers without having to design
-all that yourself.
-
-Join [the development group](https://telegram.me/go_telegram_bot_api) if
-you want to ask questions or discuss development.
 
 ## Example
 
 First, ensure the library is installed and up to date by running
 `go get -u github.com/aerth/tgbotapi`.
 
-This is a very simple bot that just displays any gotten updates,
-then replies it to that chat.
+Echo bot
+
 
 ```go
 package main
