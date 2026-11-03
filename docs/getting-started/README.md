@@ -30,7 +30,7 @@ package main
 import (
 	"os"
 
-	"github.com/aerth/telegram-bot-api"
+	"github.com/aerth/tgbotapi"
 )
 
 func main() {
