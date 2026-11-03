@@ -9,6 +9,7 @@ Fork of `github.com/go-telegram-bot-api/telegram-bot-api/v5`
 - Mux routing using HandlerFunc (like http.ServeMux)
 - Thumbnails
 - Guest Message
+- Draft Message
 - Business Message
 - Emoji Reactions
 
