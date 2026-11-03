@@ -31,7 +31,7 @@ package main
 import (
 	"log"
 
-	"github.com/aerth/telegram-bot-api"
+	"github.com/aerth/tgbotapi"
 )
 
 func main() {
