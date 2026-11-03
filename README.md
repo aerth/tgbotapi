@@ -2,105 +2,21 @@
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/aerth/tgbotapi.svg)](https://pkg.go.dev/github.com/aerth/tgbotapi)
 
-## Example
+Fork of `github.com/go-telegram-bot-api/telegram-bot-api/v5`
 
-First, ensure the library is installed and up to date by running
-`go get -u github.com/aerth/tgbotapi`.
+## New Features
 
-Echo bot
+- Mux routing using HandlerFunc (like http.ServeMux)
+- Thumbnails
+- Guest Message
+- Business Message
+- Emoji Reactions
 
+See [echo example](./cmd/echo/) for Mux example
 
-```go
-package main
-
-import (
-	"log"
-
-	"github.com/aerth/tgbotapi"
-)
-
-func main() {
-	bot, err := tgbotapi.NewBotAPI("MyAwesomeBotToken")
-	if err != nil {
-		log.Panic(err)
-	}
-
-	bot.Debug = true
-
-	log.Printf("Authorized on account %s", bot.Self.UserName)
-
-	u := tgbotapi.NewUpdate(0)
-	u.Timeout = 60
-
-	updates := bot.GetUpdatesChan(u)
-
-	for update := range updates {
-		if update.Message != nil { // If we got a message
-			log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
-
-			msg := tgbotapi.NewMessage(update.Message.Chat.ID, update.Message.Text)
-			msg.ReplyToMessageID = update.Message.MessageID
-
-			bot.Send(msg)
-		}
-	}
-}
-```
-
-If you need to use webhooks (if you wish to run on Google App Engine),
-you may use a slightly different method.
+## HandlerFunc
 
 ```go
-package main
-
-import (
-	"log"
-	"net/http"
-
-	"github.com/aerth/tgbotapi"
-)
-
-func main() {
-	bot, err := tgbotapi.NewBotAPI("MyAwesomeBotToken")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	bot.Debug = true
-
-	log.Printf("Authorized on account %s", bot.Self.UserName)
-
-	wh, _ := tgbotapi.NewWebhookWithCert("https://www.example.com:8443/"+bot.Token, "cert.pem")
-
-	_, err = bot.Request(wh)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	info, err := bot.GetWebhookInfo()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	if info.LastErrorDate != 0 {
-		log.Printf("Telegram callback failed: %s", info.LastErrorMessage)
-	}
-
-	updates := bot.ListenForWebhook("/" + bot.Token)
-	go http.ListenAndServeTLS("0.0.0.0:8443", "cert.pem", "key.pem", nil)
-
-	for update := range updates {
-		log.Printf("%+v\n", update)
-	}
-}
+func foo(ctx context.Context, b *BotAPI, u Update) error { return nil }
+mux.HandleFunc("foo", foo)
 ```
-
-If you need, you may generate a self-signed certificate, as this requires
-HTTPS / TLS. The above example tells Telegram that this is your
-certificate and that it should be trusted, even though it is not
-properly signed.
-
-    openssl req -x509 -newkey rsa:2048 -keyout key.pem -out cert.pem -days 3560 -subj "//O=Org\CN=Test" -nodes
-
-Now that [Let's Encrypt](https://letsencrypt.org) is available,
-you may wish to generate your free TLS certificate there.
