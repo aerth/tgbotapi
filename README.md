@@ -13,7 +13,7 @@ Fork of `github.com/go-telegram-bot-api/telegram-bot-api/v5`
 - Business Message
 - Emoji Reactions
 
-See [echo example](./cmd/echo/) for Mux example
+See [echo example](./cmd/echobot/) for Mux example
 
 ## HandlerFunc
 
