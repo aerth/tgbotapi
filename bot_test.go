@@ -8,7 +8,6 @@ import (
 )
 
 const (
-	TestToken               = "153667468:AAHlSHlMqSt1f_uFmVRJbm5gntu2HI4WW8I"
 	ChatID                  = 76918703
 	Channel                 = "@tgbotapitest"
 	SupergroupChatID        = -1001120141283
@@ -21,6 +20,18 @@ const (
 	ExistingVideoNoteFileID = "DQADAgADdQAD70cQSUK41dLsRMqfAg"
 	ExistingStickerFileID   = "BQADAgADcwADjMcoCbdl-6eB--YPAg"
 )
+
+func TestToken() string {
+	return os.Getenv("TG_TOKEN")
+}
+
+func TestMain(t *testing.M) {
+	if TestToken() == "" {
+		println("set TG_TOKEN to run tests")
+		os.Exit(0)
+	}
+	os.Exit(t.Run())
+}
 
 type testLogger struct {
 	t *testing.T
@@ -35,7 +46,7 @@ func (t testLogger) Printf(format string, v ...interface{}) {
 }
 
 func getBot(t *testing.T) (*BotAPI, error) {
-	bot, err := NewBotAPI(TestToken)
+	bot, err := NewBotAPI(TestToken())
 	if err != nil {
 		t.Fatal(err)
 	}
