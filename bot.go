@@ -50,6 +50,20 @@ func NewBotAPIWithAPIEndpoint(token, apiEndpoint string) (*BotAPI, error) {
 	return NewBotAPIWithClient(token, apiEndpoint, &http.Client{})
 }
 
+// NewEmpty does not call GetMe
+func NewEmpty(token string, client HTTPClient, apiEndpoint string) *BotAPI {
+	return &BotAPI{
+		Token:           token,
+		Client:          client,
+		Buffer:          100,
+		shutdownChannel: make(chan interface{}),
+		apiEndpoint:     apiEndpoint,
+		Debug:           Debug,
+	}
+}
+
+var Debug = false
+
 // NewBotAPIWithClient creates a new BotAPI instance
 // and allows you to pass a http.Client.
 //
@@ -61,14 +75,7 @@ func NewBotAPIWithClient(token, apiEndpoint string, client HTTPClient) (*BotAPI,
 	if apiEndpoint == "" {
 		apiEndpoint = APIEndpoint
 	}
-	bot := &BotAPI{
-		Token:           token,
-		Client:          client,
-		Buffer:          100,
-		shutdownChannel: make(chan interface{}),
-		apiEndpoint:     apiEndpoint,
-	}
-
+	bot := NewEmpty(token, client, apiEndpoint)
 	self, err := bot.GetMe()
 	if err != nil {
 		return nil, err
