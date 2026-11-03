@@ -21,12 +21,12 @@ const (
 	ExistingStickerFileID   = "BQADAgADcwADjMcoCbdl-6eB--YPAg"
 )
 
-func TestToken() string {
+func getTestToken() string {
 	return os.Getenv("TG_TOKEN")
 }
 
 func TestMain(t *testing.M) {
-	if TestToken() == "" {
+	if getTestToken() == "" {
 		println("set TG_TOKEN to run tests")
 		os.Exit(0)
 	}
@@ -46,7 +46,7 @@ func (t testLogger) Printf(format string, v ...interface{}) {
 }
 
 func getBot(t *testing.T) (*BotAPI, error) {
-	bot, err := NewBotAPI(TestToken())
+	bot, err := NewBotAPI(getTestToken())
 	if err != nil {
 		t.Fatal(err)
 	}
