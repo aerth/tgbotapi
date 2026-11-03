@@ -163,7 +163,10 @@ type Handler interface {
 	HandleUpdate(ctx context.Context, b *BotAPI, u Update) error
 }
 
-var Log404 = true
+var (
+	Log404            = true
+	DiscardAllUpdates = false
+)
 
 func (mx *Mux) Run(basectx context.Context, b *BotAPI, config UpdateConfig) error {
 	baser := mx.NewContext
@@ -182,6 +185,10 @@ func (mx *Mux) Run(basectx context.Context, b *BotAPI, config UpdateConfig) erro
 				return context.Cause(basectx)
 			}
 			if auth != nil && !auth(b, u) {
+				continue
+			}
+
+			if DiscardAllUpdates {
 				continue
 			}
 
